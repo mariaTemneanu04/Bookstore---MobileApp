@@ -1,12 +1,12 @@
 import React, { memo } from 'react';
-import { getLogger } from "../utils/logger";
+import { getLogger } from "../utils";
 import { IonItem, IonLabel, IonNote, IonBadge } from '@ionic/react';
 import { ItemProps } from './ItemProps';
 import {text} from "ionicons/icons";
 
 const log = getLogger('Book');
 
-const Item: React.FC<ItemProps> = ({ id, title, author, published, available }) => {
+const Item: React.FC<ItemProps> = ({ title, author, published, available }) => {
     const publishedDate = new Date(published).toLocaleDateString('ro-RO', {
         year: 'numeric',
         month: 'long',

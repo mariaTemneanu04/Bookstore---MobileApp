@@ -1,6 +1,9 @@
 import { ItemProps } from "./ItemProps";
 import {useCallback, useEffect, useState} from "react";
 import {getItems} from "../rest/itemApi";
+import { getLogger } from "../utils";
+
+const log = getLogger('useItems');
 
 export interface ItemsState {
     items?: ItemProps[],
@@ -18,7 +21,7 @@ export const useItems: () => ItemsProps = () => {
     const [fetchingError, setFetchingError] = useState<Error>();
 
     const addItem = useCallback(() => {
-        // TODO
+        log('adding a book');
     }, []);
 
     useEffect(getItemsEffect, []);
@@ -31,10 +34,10 @@ export const useItems: () => ItemsProps = () => {
     };
 
     function getItemsEffect() {
-        let canceled = false;
+        let cancelled = false;
         fetchItems();
         return () => {
-            canceled = true;
+            cancelled = true;
         }
 
         async function fetchItems() {
@@ -42,14 +45,14 @@ export const useItems: () => ItemsProps = () => {
                 setFetching(true);
                 const items = await getItems();
 
-                if (!canceled) {
+                if (!cancelled) {
                     setFetching(false);
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-expect-error
                     setItems(items);
                 }
             } catch (error) {
-                if (!canceled) {
+                if (!cancelled) {
                     setFetching(false);
                     setFetchingError(error as Error);
                 }

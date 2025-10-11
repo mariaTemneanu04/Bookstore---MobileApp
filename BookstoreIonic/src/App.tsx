@@ -1,6 +1,11 @@
-import { Redirect, Route } from 'react-router-dom';
-import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
-import { IonReactRouter } from '@ionic/react-router';
+import {Redirect, Route} from 'react-router-dom';
+import {
+    IonApp, IonIcon, IonLabel,
+    IonRouterOutlet, IonTabBar, IonTabButton, IonTabs,
+    setupIonicReact,
+} from '@ionic/react';
+
+import {IonReactRouter} from '@ionic/react-router';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -19,24 +24,43 @@ import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 
 /* Dark mode and theme variables */
-import '@ionic/react/css/palettes/dark.system.css';
+// import '@ionic/react/css/palettes/var';
 import './theme/variables.css';
 
 import ItemList from './components/ItemList';
+import ItemSave from "./components/ItemSave";
+import {add, book} from "ionicons/icons";
+import React from "react";
 
 setupIonicReact();
 
 const App: React.FC = () => (
     <IonApp>
         <IonReactRouter>
-            <IonRouterOutlet>
-                <Route exact path="/books">
-                    <ItemList />
-                </Route>
-                <Route exact path="/">
-                    <Redirect to="/books" />
-                </Route>
-            </IonRouterOutlet>
+            <IonTabs>
+
+                <IonRouterOutlet>
+                    <Route exact path="/books" component={ItemList}/>
+                    <Route exact path="/add" component={ItemSave}/>
+                    <Route exact path="/">
+                        <Redirect to="/books"/>
+                    </Route>
+                </IonRouterOutlet>
+
+                <IonTabBar slot="bottom">
+                    <IonTabButton tab="books" href="/books">
+                        <IonIcon icon={book}/>
+                        <IonLabel>Books</IonLabel>
+                    </IonTabButton>
+
+                    <IonTabButton tab="add" href="/add">
+                        <IonIcon icon={add}/>
+                        <IonLabel>Add Book</IonLabel>
+                    </IonTabButton>
+                </IonTabBar>
+
+            </IonTabs>
+
         </IonReactRouter>
     </IonApp>
 );

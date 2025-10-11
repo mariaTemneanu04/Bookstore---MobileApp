@@ -22,6 +22,15 @@ public class BookControllerWS {
         this.messagingTemplate = messagingTemplate;
     }
 
+    @PostMapping("/add")
+    public void add(@RequestBody Book book) {
+        System.out.println("[CREATE] Creating Book: " + book);
+        repo.save(book);
+        System.out.println("[CREATE] Book created -> " + book);
+
+        notifyBookChanges();
+    }
+
     @RequestMapping(method = RequestMethod.GET)
     public Iterable<Book> getAllBooks() {
         System.out.println("[GET] Finding all books");

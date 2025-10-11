@@ -1,0 +1,99 @@
+.custom-searchbar {
+    width: 70%;
+    margin: 0 auto;
+    --background: #b1a89f;
+    --color: black;
+    --placeholder-color: #474545;
+    --icon-color: #967969;
+
+    --border-radius: 10px;
+    --box-shadow: none;
+
+    --padding-start: 15px;
+    --padding-end: 15px;
+    --padding-top: 5px;
+    --padding-bottom: 5px;
+
+    font-family: "Times New Roman", serif;
+    font-size: 14px;
+    text-align: center;
+}
+
+.custom-searchbar:focus-within {
+    --background: #E8D3B5;
+    --placeholder-color: black;
+}
+
+
+.item-list-content {
+    background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.book-card {
+    margin: 16px;
+    border-radius: 16px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    --background: #fffdf8;
+}
+
+.book-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+}
+
+.available-card {
+    --background: #EADDCA;
+    --color: #065f46;
+}
+
+.unavailable-card {
+    --background: #b39687;
+    --color: #818589;
+}
+
+
+.book-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.book-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #5b4636;
+}
+
+.availability-tag {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: white;
+    text-transform: uppercase;
+    font-family: "Times New Roman", serif;
+}
+
+.available {
+    background-color: #16a34a;
+}
+
+.unavailable {
+    background-color: #dc2626;
+}
+
+.error-message {
+    color: #d32f2f;
+    text-align: center;
+    font-weight: 500;
+    margin-top: 20px;
+}
+
+.empty-message {
+    text-align: center;
+    color: #64748b;
+    font-style: italic;
+    margin-top: 40px;
+}

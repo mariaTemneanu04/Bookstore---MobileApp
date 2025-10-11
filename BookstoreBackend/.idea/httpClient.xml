@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="HttpClientEndpointsTabState">
-    <option name="requestToText" value="&lt;CachedHttpClientTabRequests&gt;&#10;  &lt;entry key=&quot;615c5d28fe53f29fd28362406b03ee91e8421891&quot; value=&quot;###&amp;#10;GET http://localhost:8080/api/bookstore/books&quot; /&gt;&#10;&lt;/CachedHttpClientTabRequests&gt;" />
+    <option name="requestToText" value="&lt;CachedHttpClientTabRequests&gt;&#10;  &lt;entry key=&quot;615c5d28fe53f29fd28362406b03ee91e8421891&quot; value=&quot;###&amp;#10;GET http://localhost:8080/api/bookstore/books&quot; /&gt;&#10;  &lt;entry key=&quot;d55e984e0ba16f7f2b5fcaae36564017fff6778d&quot; value=&quot;###&amp;#10;POST http://localhost:8080/api/bookstore/books/add&amp;#10;Content-Type: application/json&amp;#10;&amp;#10;{&amp;#10;  &amp;quot;title&amp;quot;: &amp;quot;&amp;quot;,&amp;#10;  &amp;quot;author&amp;quot;: &amp;quot;&amp;quot;,&amp;#10;  &amp;quot;published&amp;quot;: &amp;quot;&amp;quot;,&amp;#10;  &amp;quot;available&amp;quot;: false&amp;#10;}&quot; /&gt;&#10;&lt;/CachedHttpClientTabRequests&gt;" />
   </component>
 </project>

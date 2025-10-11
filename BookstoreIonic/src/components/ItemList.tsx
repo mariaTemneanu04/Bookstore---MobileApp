@@ -1,61 +1,134 @@
 import React from 'react';
 import {
+    IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle,
     IonContent,
-    IonFab,
-    IonFabButton,
-    IonHeader,
-    IonList,
-    IonLoading,
+    IonHeader, IonLoading,
     IonPage,
-    IonTitle,
-    IonToolbar,
-    IonIcon
+    IonSearchbar,
+
 } from '@ionic/react';
-import { add } from 'ionicons/icons';
+import { searchCircle } from 'ionicons/icons';
 import { useItems } from './useItems';
-import Item from './Item';
+import './ItemList.css';
 
 const ItemList: React.FC = () => {
-    const { items, fetching, fetchingError, addItem } = useItems();
+    const { items, fetching, fetchingError } = useItems();
+
+    // de adaugat un log ceva
 
     return (
         <IonPage>
             <IonHeader>
-                <IonToolbar>
-                    <IonTitle>Bookstore</IonTitle>
-                </IonToolbar>
+                <IonSearchbar
+                    className="custom-searchbar"
+                    searchIcon={searchCircle}
+                    showClearButton="focus"
+                    animated={true}
+                    placeholder="Search for a Book"
+                />
             </IonHeader>
 
-            <IonContent>
-                <IonLoading isOpen={fetching} message="Loading books..." />
+            <IonContent fullscreen className="ion-padding book-list-content">
+                <IonLoading isOpen={fetching} message="Loading books..."/>
 
-                {items && (
-                    <IonList>
-                        {items.map(({ id, title, author, published, available }) => (
-                            <Item
-                                key={id}
-                                id={id}
-                                title={title}
-                                author={author}
-                                published={published}
-                                available={available}
-                            />
-                        ))}
-                    </IonList>
+                {items && items.length > 0 ? (
+                    items.map(({ id, title, author, published, available }) => (
+                        <IonCard key={id} className={`book-card ${available ? 'available-card' : 'unavailable-card'}`}>
+                            <IonCardHeader>
+                                <div className="book-header">
+                                    <IonCardTitle className="book-title">{title}</IonCardTitle>
+                                    <span className={`availability-tag ${ available ? 'available' : 'unavailable' }`}>
+                                        {available ? 'Available' : 'Unavailable'}
+                                    </span>
+                                </div>
+                                <IonCardSubtitle>by {author}</IonCardSubtitle>
+                            </IonCardHeader>
+                            <IonCardContent>
+                                <p>
+                                    <strong>Published:</strong>{' '}
+                                    {new Date(published).toLocaleDateString()}
+                                </p>
+                            </IonCardContent>
+                        </IonCard>
+                    ))
+                ) : (
+                    !fetching && <p className="empty-message">No books available yet</p>
                 )}
 
-                {fetchingError && (
-                    <div>{fetchingError.message || 'Error at fetching books'}</div>
-                )}
+                {
+                    fetchingError && (
+                        <div className="error-message">
+                            {fetchingError.message || 'Error fetching books'}
+                        </div>
+                    )
+                }
 
-                <IonFab vertical="bottom" horizontal="end" slot="fixed">
-                    <IonFabButton onClick={addItem}>
-                        <IonIcon icon={add} />
-                    </IonFabButton>
-                </IonFab>
             </IonContent>
+
         </IonPage>
-    );
-};
+    )
+}
+
+// const ItemList: React.FC = () => {
+//     const { items, fetching, fetchingError, addItem } = useItems();
+//
+//     return (
+//         <IonPage>
+//             <IonHeader translucent>
+//                 <IonToolbar color="primary">
+//                     <IonButtons slot="start">
+//                         <IonMenuButton />
+//                     </IonButtons>
+//                     <IonTitle className="ion-text-center">Bookstore</IonTitle>
+//                 </IonToolbar>
+//             </IonHeader>
+//
+//
+//             <IonContent fullscreen className="ion-padding item-list-content">
+//                 <IonLoading isOpen={fetching} message="Loading books..." />
+//
+//                 {fetchingError && (
+//                     <div className="error-message">
+//                         {fetchingError.message || 'Error fetching books'}
+//                     </div>
+//                 )}
+//
+//                 {items && items.length > 0 ? (
+//                     items.map(({ id, title, author, published, available }) => (
+//                         <IonCard key={id} className="book-card">
+//                             <IonCardHeader>
+//                                 <div className="book-header">
+//                                     <IonCardTitle className="book-title">{title}</IonCardTitle>
+//                                     <span
+//                                         className={`availability-tag ${
+//                                             available ? 'available' : 'unavailable'
+//                                         }`}
+//                                     >
+//                     {available ? 'Available' : 'Unavailable'}
+//                   </span>
+//                                 </div>
+//                                 <IonCardSubtitle>by {author}</IonCardSubtitle>
+//                             </IonCardHeader>
+//                             <IonCardContent>
+//                                 <p>
+//                                     <strong>Published:</strong>{' '}
+//                                     {new Date(published).toLocaleDateString()}
+//                                 </p>
+//                             </IonCardContent>
+//                         </IonCard>
+//                     ))
+//                 ) : (
+//                     !fetching && <p className="empty-message">No books available yet 📖</p>
+//                 )}
+//
+//                 <IonFab vertical="bottom" horizontal="end" slot="fixed">
+//                     <IonFabButton color="success" onClick={addItem}>
+//                         <IonIcon icon={add} />
+//                     </IonFabButton>
+//                 </IonFab>
+//             </IonContent>
+//         </IonPage>
+//     );
+// };
 
 export default ItemList;
