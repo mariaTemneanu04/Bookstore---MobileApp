@@ -1,25 +1,30 @@
 package ro.pdm.controller;
 
-
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import ro.pdm.domain.Book;
 import ro.pdm.repository.IBookRepo;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import ro.pdm.websocketConfig.WSHandler;
 
-@CrossOrigin
+import java.util.HashMap;
+import java.util.Map;
+
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("api/bookstore/books")
 public class BookControllerWS {
-    @Autowired
-    protected IBookRepo repo;
+
+    private final IBookRepo repo;
+    private final WSHandler webSocketHandler;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
-    protected SimpMessagingTemplate messagingTemplate;
-
-    public BookControllerWS(IBookRepo repo, SimpMessagingTemplate messagingTemplate) {
+    public BookControllerWS(IBookRepo repo, WSHandler webSocketHandler) {
         this.repo = repo;
-        this.messagingTemplate = messagingTemplate;
+        this.webSocketHandler = webSocketHandler;
+        this.objectMapper.registerModule(new JavaTimeModule());
     }
 
     @PostMapping("/add")
@@ -28,17 +33,22 @@ public class BookControllerWS {
         repo.save(book);
         System.out.println("[CREATE] Book created -> " + book);
 
-        notifyBookChanges();
+        try {
+            Map<String, Object> message = new HashMap<>();
+            message.put("event", "created");
+            message.put("payload", Map.of("item", book));
+
+            String json = objectMapper.writeValueAsString(message);
+            System.out.println("AJUNGE LA BROADCAST");
+            webSocketHandler.broadcast(json);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Iterable<Book> getAllBooks() {
-        System.out.println("[GET] Finding all books");
+        System.out.println("[GET] Returning all books");
         return repo.getAll();
-    }
-
-    public void notifyBookChanges() {
-        System.out.println("[WS] Sending updated books to clients...");
-        messagingTemplate.convertAndSend("/topic/books", repo.getAll());
     }
 }

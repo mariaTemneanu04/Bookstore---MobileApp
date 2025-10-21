@@ -1,9 +1,13 @@
 import { ItemProps } from "./ItemProps";
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useEffect, useReducer} from "react";
 import {getItems} from "../rest/itemApi";
 import { getLogger } from "../utils";
 
 const log = getLogger('useItems');
+const FETCH_ITEMS_FAILED = 'FETCH_ITEMS_FAILED';
+const FETCH_ITEMS_SUCCEEDED = 'FETCH_ITEMS_SUCCEEDED';
+const FETCH_ITEMS_STARTED = 'FETCH_ITEMS_STARTED'
+
 
 export interface ItemsState {
     items?: ItemProps[],
@@ -11,20 +15,49 @@ export interface ItemsState {
     fetchingError?: Error,
 }
 
+interface ActionProps {
+    type: string;
+    payload?: any;
+}
+
+const initialState: ItemsState = {
+    items: undefined,
+    fetching: false,
+    fetchingError: undefined,
+}
+
 export interface ItemsProps extends ItemsState {
     addItem: () => void;
 }
 
+const reducer: (state: ItemsState, action: ActionProps) => ItemsState =
+    (state, { type, payload } )=> {
+        switch (type) {
+            case FETCH_ITEMS_STARTED:
+                return {...state, fetching: true};
+
+            case FETCH_ITEMS_SUCCEEDED:
+                return {...state, items: payload.items, fetching: false};
+
+            case FETCH_ITEMS_FAILED:
+                return {...state, fetchingError: payload.error, fetching: false};
+
+            default:
+                return state;
+        }
+};
+
+
 export const useItems: () => ItemsProps = () => {
-    const [fetching, setFetching] = useState<boolean>(false);
-    const [items, setItems] = useState<ItemProps[]>();
-    const [fetchingError, setFetchingError] = useState<Error>();
+    const [state, dispatch] = useReducer(reducer, initialState);
+    const { items, fetching, fetchingError } = state;
 
     const addItem = useCallback(() => {
         log('adding a book');
     }, []);
 
     useEffect(getItemsEffect, []);
+    log(`returns - fetching = ${fetching}, items = ${JSON.stringify(items)}`);
 
     return {
         items,
@@ -42,19 +75,17 @@ export const useItems: () => ItemsProps = () => {
 
         async function fetchItems() {
             try {
-                setFetching(true);
+                log('fetchItems started');
+                dispatch({ type: FETCH_ITEMS_STARTED });
                 const items = await getItems();
+                log('fetchItems succeeded');
 
                 if (!cancelled) {
-                    setFetching(false);
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-expect-error
-                    setItems(items);
+                    dispatch({ type: FETCH_ITEMS_SUCCEEDED, payload: { items }});
                 }
             } catch (error) {
                 if (!cancelled) {
-                    setFetching(false);
-                    setFetchingError(error as Error);
+                    dispatch({ type: FETCH_ITEMS_FAILED, payload: { error }});
                 }
             }
         }

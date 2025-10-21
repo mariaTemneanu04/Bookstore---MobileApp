@@ -5,4 +5,5 @@ import ro.pdm.domain.Book;
 
 @Component
 public interface IBookRepo extends Repository<Integer, Book> {
+    Integer getMaxId();
 }

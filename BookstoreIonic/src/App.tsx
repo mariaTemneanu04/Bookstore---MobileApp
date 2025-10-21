@@ -31,6 +31,10 @@ import ItemList from './components/ItemList';
 import ItemSave from "./components/ItemSave";
 import {add, book} from "ionicons/icons";
 import React from "react";
+import {ItemProvider} from "./providers/ItemProvider";
+import {AuthProvider} from "./providers/AuthProvider";
+import {Login} from "./components/Login";
+import {PrivateRoute} from "./providers/PrivateRoute";
 
 setupIonicReact();
 
@@ -38,13 +42,17 @@ const App: React.FC = () => (
     <IonApp>
         <IonReactRouter>
             <IonTabs>
-
                 <IonRouterOutlet>
-                    <Route exact path="/books" component={ItemList}/>
-                    <Route exact path="/add" component={ItemSave}/>
-                    <Route exact path="/">
-                        <Redirect to="/books"/>
-                    </Route>
+                    <AuthProvider>
+                        <Route path="/login" component={Login} exact={true}/>
+                        <ItemProvider>
+                            <PrivateRoute component={ItemList} path="/books"/>
+                            <PrivateRoute component={ItemSave} path="/add"/>
+                        </ItemProvider>
+                    </AuthProvider>
+
+                    <Route exact path="/" render={() => <Redirect to="/books" />} />
+
                 </IonRouterOutlet>
 
                 <IonTabBar slot="bottom">
@@ -62,6 +70,7 @@ const App: React.FC = () => (
             </IonTabs>
 
         </IonReactRouter>
+
     </IonApp>
 );
 

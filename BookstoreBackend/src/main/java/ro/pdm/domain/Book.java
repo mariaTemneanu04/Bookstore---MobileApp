@@ -1,5 +1,6 @@
 package ro.pdm.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Column;
 import jakarta.persistence.Table;
 

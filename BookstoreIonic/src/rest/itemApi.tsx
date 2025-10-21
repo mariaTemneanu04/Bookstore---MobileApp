@@ -1,44 +1,49 @@
 import axios from 'axios';
-import { ItemsProps } from '../components/useItems';
-import {getLogger} from "../utils";
+import {authConfig, getLogger} from "../utils";
+import {ItemProps} from "../components/ItemProps";
+import { withLogs, baseUrl } from "../utils";
 
-const baseUrl = 'http://localhost:8080';
 
-export const getItems: () => Promise<ItemsProps[]> = () => {
-    return axios
-        .get(`${baseUrl}/api/bookstore/books`)
-        .then(res => {
-            return Promise.resolve(res.data);
-        })
-        .catch(err => {
-            return Promise.reject(err);
-        });
+const itemUrl = `http://${baseUrl}/api/book`;
+
+export const getItems: (token: string) => Promise<ItemProps[]> = token => {
+    return withLogs(axios.get(itemUrl, authConfig(token)), 'getItems');
+}
+
+export const createItem: (token: string, item: ItemProps) => Promise<ItemProps[]> = (token, item) => {
+    return withLogs(axios.post(itemUrl, item, authConfig(token)), 'createItem');
 }
 
 interface MessageData {
     type: string;
-    payload: ItemsProps;
+    payload: ItemProps;
 }
 
 const log = getLogger("websocket");
 
 export const newWebSocket = (token: string, onMessage: (data: MessageData) => void) => {
-    const ws = new WebSocket(`ws://${baseUrl}`);
-    ws.onopen = () => {
-        log('web socket onopen');
-        ws.send(JSON.stringify({ type: 'authorization', payload: { token } }));
-    };
-    ws.onclose = () => {
-        log('web socket onclose');
-    };
-    ws.onerror = error => {
-        log('web socket onerror', error);
-    };
-    ws.onmessage = messageEvent => {
-        log('web socket onmessage');
-        onMessage(JSON.parse(messageEvent.data));
-    };
-    return () => {
-        ws.close();
+    try {
+        const ws = new WebSocket(`ws://${baseUrl}`)
+        ws.onopen = () => {
+            log('web socket onopen');
+            ws.send(JSON.stringify({ type: 'authorization', payload: { token } }));
+        };
+        ws.onclose = () => {
+            log('web socket onclose');
+        };
+        ws.onerror = error => {
+            log('web socket onerror', error);
+        };
+        ws.onmessage = messageEvent => {
+            log('web socket onmessage', messageEvent.data);
+            onMessage(JSON.parse(messageEvent.data));
+        };
+        return () => {
+            log('web socket onclose PROBLEM HERE MAYBE???');
+            ws.close();
+        }
+    }
+    catch (error) {
+        log('We are offline, so no ws can be established: ', error);
     }
 }

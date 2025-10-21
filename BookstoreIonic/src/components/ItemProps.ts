@@ -2,6 +2,6 @@ export interface ItemProps {
     id?: number;
     title: string;
     author?: string | null;
-    published: string;
+    published: Date;
     available: boolean;
 }

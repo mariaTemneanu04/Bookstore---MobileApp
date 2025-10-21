@@ -39,4 +39,15 @@ public class BookRepo implements IBookRepo {
             return session.createQuery("from Book", Book.class).list();
         }
     }
+
+    @Override
+    public Integer getMaxId() {
+        try (Session session = sessionFactory.openSession()) {
+            return session.createQuery("select max(b.id) from Book b", Integer.class)
+                    .uniqueResult();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
 }
