@@ -1,48 +1,93 @@
-import React, { useContext } from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
     IonContent,
     IonHeader,
     IonLoading,
     IonPage,
     IonSearchbar,
-    IonList
+    IonList, IonButton, IonIcon, IonButtons, IonToolbar, IonInfiniteScroll, IonInfiniteScrollContent
 } from '@ionic/react';
-import { searchCircle } from 'ionicons/icons';
-import { RouteComponentProps } from "react-router";
-import { ItemContext } from "../providers/ItemProvider";
+import {logOutOutline, searchCircle} from 'ionicons/icons';
+import {RouteComponentProps} from "react-router";
+import {ItemContext} from "../providers/ItemProvider";
 import Item from './Item';
 import './ItemList.css';
+import {AuthContext} from "../providers/AuthProvider";
 
 const ItemList: React.FC<RouteComponentProps> = () => {
-    const { items, fetching, fetchingError } = useContext(ItemContext);
+    const { items = [], fetching, fetchingError } = useContext(ItemContext);
+    const {logout} = useContext(AuthContext);
+    const [disableInfiniteScroll, setDisableInfiniteScroll] = useState<boolean>(false);
+
+    const [loaded, setLoaded] = useState<any[]>([]);
+
+    useEffect(() => {
+        if (items && items.length > 0) {
+            const firstPage = items.slice(0, 4);
+            setLoaded(firstPage);
+            setDisableInfiniteScroll(firstPage.length >= items.length);
+        }
+    }, [items]);
+
+    // incarcare urmatoarele carti la scroll
+    async function fetchData() {
+        const nextSet = items.slice(loaded.length, loaded.length + 4);
+        setLoaded([...loaded, ...nextSet]);
+        setDisableInfiniteScroll(loaded.length + nextSet.length >= items?.length);
+    }
+
+    async function searchNext($event: CustomEvent<void>) {
+        await fetchData();
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        await ($event.target as HTMLIonInfiniteScrollElement).complete();
+    }
 
     return (
         <IonPage>
             <IonHeader>
-                <IonSearchbar
-                    className="custom-searchbar"
-                    searchIcon={searchCircle}
-                    showClearButton="focus"
-                    animated={true}
-                    placeholder="Search for a Book"
-                />
+                <IonToolbar>
+                    <IonSearchbar
+                        className="custom-searchbar"
+                        searchIcon={searchCircle}
+                        showClearButton="focus"
+                        animated={true}
+                        placeholder="Search for a Book"
+                    />
+                    <IonButtons slot="end">
+                        <IonButton color="medium" onClick={logout}>
+                            <IonIcon icon={logOutOutline} color="danger" slot="icon-only"/>
+                        </IonButton>
+                    </IonButtons>
+                </IonToolbar>
             </IonHeader>
 
             <IonContent fullscreen className="ion-padding book-list-content">
-                <IonLoading isOpen={fetching} message="Loading books..." />
+                <IonLoading isOpen={fetching} message="Loading books..."/>
 
-                {items && items.length > 0 ? (
-                    <IonList>
-                        {items.map(({ id, title, author, published, available }) => (
-                            <Item
-                                key={id}
-                                title={title}
-                                author={author}
-                                published={published}
-                                available={available}
-                            />
-                        ))}
-                    </IonList>
+                {loaded.length > 0 ? (
+                    <>
+                        <IonList>
+                            {loaded.map(({id, title, author, published, available}) => (
+                                <Item
+                                    key={id}
+                                    title={title}
+                                    author={author}
+                                    published={published}
+                                    available={available}
+                                />
+                            ))}
+                        </IonList>
+
+                        <IonInfiniteScroll
+                            threshold="88px"
+                            disabled={disableInfiniteScroll}
+                            onIonInfinite={(e: CustomEvent<void>) => searchNext(e)}>
+
+                            <IonInfiniteScrollContent
+                                loadingSpinner="bubbles"
+                                loadingText="Loading more books..."/>
+                        </IonInfiniteScroll>
+                    </>
                 ) : (
                     !fetching && <p className="empty-message">No books available yet</p>
                 )}

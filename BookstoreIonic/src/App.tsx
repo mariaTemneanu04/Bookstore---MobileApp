@@ -49,10 +49,9 @@ const App: React.FC = () => (
                             <PrivateRoute component={ItemList} path="/books"/>
                             <PrivateRoute component={ItemSave} path="/add"/>
                         </ItemProvider>
+
+                        <Route exact path="/" render={() => <Redirect to="/books" />} />
                     </AuthProvider>
-
-                    <Route exact path="/" render={() => <Redirect to="/books" />} />
-
                 </IonRouterOutlet>
 
                 <IonTabBar slot="bottom">
@@ -66,11 +65,8 @@ const App: React.FC = () => (
                         <IonLabel>Add Book</IonLabel>
                     </IonTabButton>
                 </IonTabBar>
-
             </IonTabs>
-
         </IonReactRouter>
-
     </IonApp>
 );
 
