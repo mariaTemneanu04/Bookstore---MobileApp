@@ -29,7 +29,7 @@ import './theme/variables.css';
 
 import ItemList from './components/ItemList';
 import ItemSave from "./components/ItemSave";
-import {add, book} from "ionicons/icons";
+import {add, book, filter} from "ionicons/icons";
 import React from "react";
 import {ItemProvider} from "./providers/ItemProvider";
 import {AuthProvider} from "./providers/AuthProvider";
@@ -63,6 +63,11 @@ const App: React.FC = () => (
                     <IonTabButton tab="add" href="/add">
                         <IonIcon icon={add}/>
                         <IonLabel>Add Book</IonLabel>
+                    </IonTabButton>
+
+                    <IonTabButton tab="filter" href="/filter">
+                        <IonIcon icon={filter}/>
+                        <IonLabel>Filter</IonLabel>
                     </IonTabButton>
                 </IonTabBar>
             </IonTabs>

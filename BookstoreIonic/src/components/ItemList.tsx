@@ -17,23 +17,38 @@ import {AuthContext} from "../providers/AuthProvider";
 const ItemList: React.FC<RouteComponentProps> = () => {
     const { items = [], fetching, fetchingError } = useContext(ItemContext);
     const {logout} = useContext(AuthContext);
-    const [disableInfiniteScroll, setDisableInfiniteScroll] = useState<boolean>(false);
 
+    const [disableInfiniteScroll, setDisableInfiniteScroll] = useState<boolean>(false);
     const [loaded, setLoaded] = useState<any[]>([]);
+    const [search, setSearch] = useState<string>('');
+    const [filteredItems, setFilteredItems] = useState<any[]>([]);
+
+    // filtrarea la fiecare modificare a searchText
+    useEffect(() => {
+        let filtered;
+        if (search.trim() === '')
+            filtered = items;
+        else
+            filtered = items.filter(b =>
+                b.title?.toLowerCase().includes(search.toLowerCase()) ||
+                b.author?.toLowerCase().includes(search.toLowerCase())
+            );
+
+        setFilteredItems(filtered);
+    }, [items, search]);
 
     useEffect(() => {
-        if (items && items.length > 0) {
-            const firstPage = items.slice(0, 4);
-            setLoaded(firstPage);
-            setDisableInfiniteScroll(firstPage.length >= items.length);
-        }
-    }, [items]);
+        const firstPage = filteredItems.slice(0, 4);
+        setLoaded(firstPage);
+        setDisableInfiniteScroll(firstPage.length >= filteredItems.length);
+    }, [filteredItems]);
+
 
     // incarcare urmatoarele carti la scroll
     async function fetchData() {
-        const nextSet = items.slice(loaded.length, loaded.length + 4);
+        const nextSet = filteredItems.slice(loaded.length, loaded.length + 4);
         setLoaded([...loaded, ...nextSet]);
-        setDisableInfiniteScroll(loaded.length + nextSet.length >= items?.length);
+        setDisableInfiniteScroll(loaded.length + nextSet.length >= filteredItems.length);
     }
 
     async function searchNext($event: CustomEvent<void>) {
@@ -52,6 +67,7 @@ const ItemList: React.FC<RouteComponentProps> = () => {
                         showClearButton="focus"
                         animated={true}
                         placeholder="Search for a Book"
+                        onIonInput={e => setSearch(e.detail.value || '')}
                     />
                     <IonButtons slot="end">
                         <IonButton color="medium" onClick={logout}>
