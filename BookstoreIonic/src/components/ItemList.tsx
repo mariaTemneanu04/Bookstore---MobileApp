@@ -65,7 +65,7 @@ const ItemList: React.FC<RouteComponentProps> = () => {
                         className="custom-searchbar"
                         searchIcon={searchCircle}
                         showClearButton="focus"
-                        animated={true}
+                        debounce={300}
                         placeholder="Search for a Book"
                         onIonInput={e => setSearch(e.detail.value || '')}
                     />

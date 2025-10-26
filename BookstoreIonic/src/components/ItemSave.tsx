@@ -50,7 +50,7 @@ const ItemSave: React.FC<RouteComponentProps> = ({ history }) => {
     log('render ItemSave page');
 
     const { saving, savingError, saveItem } = useContext(ItemContext);
-    const [book, setBook] = useState<ItemProps | undefined>(undefined);
+    const [book] = useState<ItemProps | undefined>(undefined);
 
     const [title, setTitle] = useState('');
     const [author, setAuthor] = useState('');

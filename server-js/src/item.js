@@ -59,6 +59,17 @@ bookRouter.post('/', async (ctx) => {
     await createBook(ctx, ctx.request.body, ctx.response);
 });
 
+bookRouter.get('/authors', async (ctx) => {
+    try {
+        ctx.response.body = await bookStore.getAuthors();
+        ctx.response.status = 200;
+    } catch (err) {
+        console.error('Error fetching authors', err);
+        ctx.response.status = 500;
+        ctx.response.body = { message: 'Internal Server Error' };
+    }
+});
+
 // bookRouter.put('/:id', async (ctx) => {
 //     const book = ctx.request.body;
 //     const id = ctx.params.id;

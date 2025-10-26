@@ -29,6 +29,7 @@ import './theme/variables.css';
 
 import ItemList from './components/ItemList';
 import ItemSave from "./components/ItemSave";
+import ItemFilter from "./components/ItemFilter";
 import {add, book, filter} from "ionicons/icons";
 import React from "react";
 import {ItemProvider} from "./providers/ItemProvider";
@@ -48,6 +49,7 @@ const App: React.FC = () => (
                         <ItemProvider>
                             <PrivateRoute component={ItemList} path="/books"/>
                             <PrivateRoute component={ItemSave} path="/add"/>
+                            <PrivateRoute component={ItemFilter} path="/filter"/>
                         </ItemProvider>
 
                         <Route exact path="/" render={() => <Redirect to="/books" />} />

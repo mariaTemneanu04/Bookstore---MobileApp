@@ -5,6 +5,7 @@ import { withLogs, baseUrl } from "../utils";
 
 
 const itemUrl = `http://${baseUrl}/api/book`;
+const authorsUrl = `http://${baseUrl}/api/book/authors`;
 
 export const getItems: (token: string) => Promise<ItemProps[]> = token => {
     return withLogs(axios.get(itemUrl, authConfig(token)), 'getItems');
@@ -12,6 +13,10 @@ export const getItems: (token: string) => Promise<ItemProps[]> = token => {
 
 export const createItem: (token: string, item: ItemProps) => Promise<ItemProps[]> = (token, item) => {
     return withLogs(axios.post(itemUrl, item, authConfig(token)), 'createItem');
+}
+
+export const getAuthors: (token: string) => Promise<string[]> = (token) => {
+    return withLogs(axios.get(authorsUrl, authConfig(token)), 'getAuthors');
 }
 
 interface MessageData {

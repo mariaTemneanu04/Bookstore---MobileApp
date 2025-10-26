@@ -49,6 +49,14 @@ export class BookStore {
 
         return book;
     }
+
+    async getAuthors() {
+        const rows = await this.db.all(
+            'select distinct author from books where author is not null order by author asc'
+        );
+
+        return rows.map(b => b.author);
+    }
 }
 
 const bookStore = new BookStore({ filename: 'src\\bookstoredb.db' });
