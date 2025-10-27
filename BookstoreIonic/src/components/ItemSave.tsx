@@ -13,7 +13,7 @@ import {
     IonText,
     IonLoading, IonCheckbox,
 } from '@ionic/react';
-import './ItemSave.css';
+import './css/ItemSave.css';
 import { ItemProps } from './ItemProps';
 import { getLogger } from '../utils';
 import { ItemContext } from '../providers/ItemProvider';

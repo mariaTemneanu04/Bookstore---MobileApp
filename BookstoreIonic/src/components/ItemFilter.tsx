@@ -17,7 +17,7 @@ import {
     IonSelect,
     IonSelectOption,
 } from "@ionic/react";
-import './ItemSave.css';
+import './css/ItemSave.css';
 import {getLogger} from "../utils";
 import Item from "./Item";
 import {AuthContext} from "../providers/AuthProvider";

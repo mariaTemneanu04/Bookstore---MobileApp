@@ -17,26 +17,6 @@ bookRouter.get('/', async (ctx) => {
     ctx.response.status = 200;
 });
 
-// bookRouter.get('/:id', async (ctx) => {
-//     const userId = ctx.state.user._id;
-//     const book = await bookStore.findOne({ id: ctx.params.id });
-//     const response = ctx.response;
-//     if (book) {
-//         if (book.userId === userId) {
-//             book.isAvailable = book.isAvailable === 1 ? true : false;
-//             response.body = book;
-//             response.status = 200;
-//         } else {
-//             response.body = { message: 'Unauthorized User' };
-//             response.status = 403;
-//         }
-//     }
-//     else {
-//         response.body = { message: `book with id ${ctx.params.id} not found` };
-//         response.status = 404;
-//     }
-// });
-
 const createBook = async (ctx, book, response) => {
     try {
         book.userId = ctx.state.user._id;
@@ -47,7 +27,7 @@ const createBook = async (ctx, book, response) => {
         console.log(newBookToLog);
         response.body = newBook;
         response.status = 201;
-        broadcast(book.userId, { type: 'created', payload: book });
+        broadcast(book.userId, { type: 'created', payload: newBook });
     } catch (err) {
         console.log(err);
         response.body = { message: err.message };

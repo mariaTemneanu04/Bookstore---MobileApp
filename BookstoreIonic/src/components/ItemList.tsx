@@ -5,18 +5,20 @@ import {
     IonLoading,
     IonPage,
     IonSearchbar,
-    IonList, IonButton, IonIcon, IonButtons, IonToolbar, IonInfiniteScroll, IonInfiniteScrollContent
+    IonList, IonButton, IonIcon, IonButtons, IonToolbar, IonInfiniteScroll, IonInfiniteScrollContent, IonText
 } from '@ionic/react';
 import {logOutOutline, searchCircle} from 'ionicons/icons';
 import {RouteComponentProps} from "react-router";
 import {ItemContext} from "../providers/ItemProvider";
 import Item from './Item';
-import './ItemList.css';
+import './css/ItemList.css';
 import {AuthContext} from "../providers/AuthProvider";
+import {useNetwork} from "../hooks/useNetwork";
 
 const ItemList: React.FC<RouteComponentProps> = () => {
     const { items = [], fetching, fetchingError } = useContext(ItemContext);
     const {logout} = useContext(AuthContext);
+    const { networkStatus } = useNetwork();
 
     const [disableInfiniteScroll, setDisableInfiniteScroll] = useState<boolean>(false);
     const [loaded, setLoaded] = useState<any[]>([]);
@@ -61,6 +63,13 @@ const ItemList: React.FC<RouteComponentProps> = () => {
         <IonPage>
             <IonHeader>
                 <IonToolbar>
+
+                    <div className="network-status">
+                        <IonText color={networkStatus.connected ? 'success' : 'danger'}>
+                            {networkStatus.connected ? '🟢 Online' : '🔴 Offline'}
+                        </IonText>
+                    </div>
+
                     <IonSearchbar
                         className="custom-searchbar"
                         searchIcon={searchCircle}

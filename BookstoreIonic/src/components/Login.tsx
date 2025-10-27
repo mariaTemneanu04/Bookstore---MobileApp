@@ -1,8 +1,20 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router';
-import { IonButton, IonContent, IonHeader, IonInput, IonLoading, IonPage, IonTitle, IonToolbar } from '@ionic/react';
+import {
+    IonButton,
+    IonContent,
+    IonHeader,
+    IonInput,
+    IonLoading,
+    IonPage,
+    IonText,
+    IonTitle,
+    IonToolbar
+} from '@ionic/react';
 import { AuthContext } from '../providers/AuthProvider';
 import { getLogger } from '../utils';
+import {useNetwork} from "../hooks/useNetwork";
+import "./css/Login.css";
 
 const log = getLogger('Login');
 
@@ -13,6 +25,8 @@ interface LoginState {
 
 export const Login: React.FC<RouteComponentProps> = ({ history }) => {
     const { isAuthenticated, isAuthenticating, login, authenticationError } = useContext(AuthContext);
+    const { networkStatus } = useNetwork();
+
     const [state, setState] = useState<LoginState>({
         username: '',
         password: '',
@@ -21,7 +35,7 @@ export const Login: React.FC<RouteComponentProps> = ({ history }) => {
     const { username, password } = state;
     const isLoginDisabled = !username || !password;
 
-    const handlePasswwordChange = useCallback((e: any) => setState({
+    const handlePasswordChange = useCallback((e: any) => setState({
         ...state,
         password: e.detail.value || ''
     }), [state]);
@@ -56,9 +70,11 @@ export const Login: React.FC<RouteComponentProps> = ({ history }) => {
         <IonPage>
             <IonHeader>
                 <IonToolbar>
-                    <IonTitle
-                        className="custom-title"
-                    >Login</IonTitle>
+                    <div className="network-status">
+                        <IonText color={networkStatus.connected ? 'success' : 'danger'}>
+                            {networkStatus.connected ? '🟢 Online' : '🔴 Offline'}
+                        </IonText>
+                    </div>
                 </IonToolbar>
             </IonHeader>
             <IonContent>
@@ -73,7 +89,7 @@ export const Login: React.FC<RouteComponentProps> = ({ history }) => {
                     className="custom-input"
                     placeholder="Password"
                     value={password}
-                    onIonChange={handlePasswwordChange} />
+                    onIonChange={handlePasswordChange} />
                 <IonLoading isOpen={isAuthenticating} />
                 <IonButton
                     className="custom-button"

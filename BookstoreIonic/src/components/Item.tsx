@@ -10,7 +10,7 @@ import {
 } from '@ionic/react';
 import { ItemProps } from './ItemProps';
 import { format } from 'date-fns';
-import './ItemList.css';
+import './css/ItemList.css';
 
 const log = getLogger('Book');
 
