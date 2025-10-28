@@ -36,6 +36,7 @@ import {ItemProvider} from "./providers/ItemProvider";
 import {AuthProvider} from "./providers/AuthProvider";
 import {Login} from "./components/Login";
 import {PrivateRoute} from "./providers/PrivateRoute";
+import ItemEdit from "./components/ItemEdit";
 
 setupIonicReact();
 
@@ -47,9 +48,10 @@ const App: React.FC = () => (
                     <AuthProvider>
                         <Route path="/login" component={Login} exact={true}/>
                         <ItemProvider>
-                            <PrivateRoute component={ItemList} path="/books"/>
-                            <PrivateRoute component={ItemSave} path="/add"/>
-                            <PrivateRoute component={ItemFilter} path="/filter"/>
+                            <PrivateRoute component={ItemList} path="/books" exact={true}/>
+                            <PrivateRoute component={ItemSave} path="/add" exact={true}/>
+                            <PrivateRoute component={ItemFilter} path="/filter" exact={true}/>
+                            <PrivateRoute component={ItemEdit} path="/edit/:id" exact={true}/>
                         </ItemProvider>
 
                         <Route exact path="/" render={() => <Redirect to="/books" />} />
@@ -68,9 +70,10 @@ const App: React.FC = () => (
                     </IonTabButton>
 
                     <IonTabButton tab="filter" href="/filter">
-                        <IonIcon icon={filter}/>
                         <IonLabel>Filter</IonLabel>
+                        <IonIcon icon={filter}/>
                     </IonTabButton>
+
                 </IonTabBar>
             </IonTabs>
         </IonReactRouter>

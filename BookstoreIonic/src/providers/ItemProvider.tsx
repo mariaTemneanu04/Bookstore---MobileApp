@@ -1,8 +1,8 @@
 import {getLogger} from "../utils";
-import {ItemProps} from "../components/ItemProps";
+import {ItemProps} from "../components/props/ItemProps";
 import React, {useCallback, useContext, useEffect, useReducer} from "react";
 import PropTypes from "prop-types";
-import {createItem, getItems, newWebSocket} from "../rest/itemApi";
+import {createItem, getItems, newWebSocket, updateItem} from "../rest/itemApi";
 import {Preferences} from '@capacitor/preferences';
 import {AuthContext} from "./AuthProvider";
 import {useNetwork} from "../hooks/useNetwork";
@@ -149,16 +149,6 @@ export const ItemProvider: React.FC<ItemProviderProps> = ({children}) => {
 
                     Preferences.set({key: 'books', value: JSON.stringify(itemsArray)});
                     dispatch({type: FETCH_ITEMS_SUCCEEDED, payload: {items: itemsArray}});
-                    // if (token) {
-                    //     log('Fetching updated items from server after sync...');
-                    //     const refreshedItems = await getItems(token);
-                    //
-                    //     await Preferences.set({ key: 'books', value: JSON.stringify(refreshedItems) });
-                    //     dispatch({ type: FETCH_ITEMS_SUCCEEDED, payload: { items: refreshedItems } });
-                    //
-                    //     log('Books successfully refreshed after sync.');
-                    // }
-
                 }
             }
         }
@@ -211,7 +201,10 @@ export const ItemProvider: React.FC<ItemProviderProps> = ({children}) => {
                 log('saveItem started');
                 dispatch({type: SAVE_ITEM_STARTED});
 
-                const savedItem = await createItem(token, item);
+                log('saveItem token:', token);
+                log('saveItem item:', item);
+
+                const savedItem = await (item.id ? updateItem(token, item) : createItem(token, item));
 
                 log('saveItem succeeded');
                 dispatch({type: SAVE_ITEM_SUCCEEDED, payload: {item: savedItem}});
@@ -265,7 +258,7 @@ export const ItemProvider: React.FC<ItemProviderProps> = ({children}) => {
                 const {type, payload: item} = message;
                 log(`ws message, item ${type}`);
 
-                if (type === 'created') {
+                if (type === 'created' || type === 'updated') {
                     if (items) {
                         const array = [...items];
                         const index = array.findIndex(b => b.id === item.id);

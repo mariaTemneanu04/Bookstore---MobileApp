@@ -50,43 +50,28 @@ bookRouter.get('/authors', async (ctx) => {
     }
 });
 
-// bookRouter.put('/:id', async (ctx) => {
-//     const book = ctx.request.body;
-//     const id = ctx.params.id;
-//     const bookId = book.id;
-//     const response = ctx.response;
-//     if (bookId && bookId !== id) {
-//         response.body = { message: 'Unauthorized User' };
-//         response.status = 403;
-//         return;
-//     }
-//     if (!bookId || bookId < 0) {
-//         await createBook(ctx, book, response);
-//     } else {
-//         const userId = ctx.state.user._id;
-//         book.userId = userId;
-//         const updated = await bookStore.update({ id: parseInt(id) }, book);
-//         if (updated === 1) {
-//             response.body = book;
-//             response.status = 200;
-//             broadcast(book.userId, { type: 'updated', payload: book });
-//         } else {
-//             response.body = { message: `book with id ${bookId} not found` };
-//             response.status = 404;
-//         }
-//     }
-// });
-
-// bookRouter.del('/:id', async (ctx) => {
-//     const userId = ctx.state.user._id;
-//     const book = await bookStore.findOne({ id: ctx.params.id });
-//     if (book && book.userId !== userId) {
-//         ctx.response.body = { message: 'Unauthorized User' };
-//         ctx.response.status = 403;
-//         return;
-//     }
-//     await bookStore.remove({ id: ctx.params.id });
-//     ctx.response.body = { message: 'success' };
-//     ctx.response.status = 204;
-//     broadcast(book.userId, { type: 'deleted', payload: book });
-// });
+bookRouter.put('/edit/:id', async (ctx) => {
+    const book = ctx.request.body;
+    const id = ctx.params.id;
+    const bookId = book.id;
+    const response = ctx.response;
+    if (bookId && bookId !== id) {
+        response.body = { message: 'Param id and body _id should be the same' };
+        response.status = 400; // bad request
+        return;
+    }
+    if (!bookId || bookId < 0) {
+        await createBook(ctx, book, response);
+    } else {
+        book.userId = ctx.state.user._id;
+        const updated = await bookStore.update({ id: parseInt(id) }, book);
+        if (updated === 1) {
+            response.body = book;
+            response.status = 200;
+            broadcast(book.userId, { type: 'updated', payload: book });
+        } else {
+            response.body = { message: `book with id ${bookId} not found` };
+            response.status = 405;
+        }
+    }
+});

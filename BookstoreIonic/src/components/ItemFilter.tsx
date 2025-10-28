@@ -123,6 +123,7 @@ const ItemFilter: React.FC<RouteComponentProps> = () => {
                             {!loading && loaded.map(({id, title, author, published, available}) => (
                                 <Item
                                     key={id}
+                                    id={id}
                                     title={title}
                                     author={author}
                                     published={published}

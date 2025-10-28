@@ -1,4 +1,4 @@
-import React, { useContext, useState, useCallback } from 'react';
+import React, {useContext, useState, useCallback, useEffect} from 'react';
 import {
     IonPage,
     IonContent,
@@ -14,13 +14,17 @@ import {
     IonLoading, IonCheckbox,
 } from '@ionic/react';
 import './css/ItemSave.css';
-import { ItemProps } from './props/ItemProps';
-import { getLogger } from '../utils';
-import { ItemContext } from '../providers/ItemProvider';
-import { RouteComponentProps } from 'react-router';
+import {ItemProps} from './props/ItemProps';
+import {getLogger} from '../utils';
+import {ItemContext} from '../providers/ItemProvider';
+import {RouteComponentProps, useHistory, useLocation, useParams} from 'react-router';
 import {format} from "date-fns";
 
 const log = getLogger('ItemSave');
+
+interface RouteParams {
+    id: string;
+}
 
 function parseDDMMYYYY(dateString: string) {
     const [day, month, year] = dateString.split('/').map(Number);
@@ -46,38 +50,85 @@ function parseDDMMYYYY(dateString: string) {
     return parsedDate;
 }
 
-const ItemSave: React.FC<RouteComponentProps> = ({ history }) => {
-    log('render ItemSave page');
+const ItemEdit: React.FC<RouteComponentProps> = () => {
+    log('render ItemEdit page');
 
-    const { saving, savingError, saveItem } = useContext(ItemContext);
-    const [book] = useState<ItemProps | undefined>(undefined);
+    const {id} = useParams<RouteParams>();
+    const location = useLocation<{ item?: ItemProps }>();
+    const history = useHistory();
+
+    const {items, saveItem, saving, savingError} = useContext(ItemContext);
+    const [book, setBook] = useState<ItemProps | undefined>(undefined);
+    const [original, setOriginal] = useState<ItemProps | undefined>(undefined);
 
     const [title, setTitle] = useState('');
     const [author, setAuthor] = useState('');
     const [published, setPublished] = useState<Date | undefined>(undefined);
     const [available, setAvailable] = useState(false);
 
-    const handleSave = useCallback(async () => {
-        try {
-            if (!title) {
-                alert("title is required");
-                return;
+    const [hasChanges, setHasChanges] = useState(false);
+
+    useEffect(() => {
+        let foundItem: ItemProps | undefined = location.state?.item;
+
+        if (!foundItem && items) {
+            foundItem = items.find((item) => item.id === id);
+        }
+
+        if (foundItem) {
+            setBook(foundItem);
+            setOriginal(foundItem);
+            setTitle(foundItem.title || '');
+            setAuthor(foundItem.author || '');
+            setAvailable(foundItem.available || false);
+
+            if (foundItem.published) {
+                const parsed = new Date(foundItem.published);
+                if (!isNaN(parsed.getTime())) {
+                    setPublished(parsed);
+                }
             }
 
-            const newBook: ItemProps = {
-                id: book?.id,
-                title,
-                author,
-                published: published || new Date(),
-                available,
-            };
+            log('Loaded item for edit:', foundItem);
+        }
+    }, [id, location.state, items]);
 
-            await saveItem?.(newBook);
-            log('handleSave - Book saved successfully.');
-            history.goBack();
+    useEffect(() => {
+        if (!original) return;
 
-        } catch (error) {
-            log('Save failed', error);
+        const changed =
+            title !== (original.title || '') ||
+            author !== (original.author || '') ||
+            available !== (original.available || false) ||
+            (published && original.published
+                ? new Date(published).getTime() !== new Date(original.published).getTime()
+                : published !== original.published);
+
+        setHasChanges(changed);
+    }, [title, author, published, available, original]);
+
+    const handleEdit = useCallback(async () => {
+        if (!title) {
+            alert("title is required");
+            return;
+        }
+
+        const edited: ItemProps = {
+            id: book?.id,
+            title,
+            author,
+            published: published || new Date(),
+            available,
+        };
+
+        setHasChanges(false);
+        log('handleEdit - Saveing edited book');
+
+        if (saveItem) {
+            saveItem(edited).then(() => {
+                log('handleEdit - Book saved successfully. Navigating back.');
+                history.goBack();
+            });
         }
     }, [book, saveItem, title, author, published, available, history]);
 
@@ -86,7 +137,7 @@ const ItemSave: React.FC<RouteComponentProps> = ({ history }) => {
             <IonContent fullscreen className="ion-padding add-book-content">
                 <IonCard className="add-book-card">
                     <IonCardHeader>
-                        <IonCardTitle className="title-style">Book Details</IonCardTitle>
+                        <IonCardTitle className="title-style">Book Edit</IonCardTitle>
                     </IonCardHeader>
 
                     <IonCardContent>
@@ -149,13 +200,13 @@ const ItemSave: React.FC<RouteComponentProps> = ({ history }) => {
                         <IonButton
                             expand="block"
                             className="save-button"
-                            onClick={handleSave}
-                            disabled={saving}
+                            onClick={handleEdit}
+                            disabled={!hasChanges || saving}
                         >
-                            {saving ? 'Saving...' : 'Save Book'}
+                            {saving ? 'Saving...' : 'Save Changes'}
                         </IonButton>
 
-                        <IonLoading isOpen={saving} message="Saving book..." />
+                        <IonLoading isOpen={saving} message="Saving book..."/>
 
                         {savingError && (
                             <IonText color="danger">
@@ -169,4 +220,4 @@ const ItemSave: React.FC<RouteComponentProps> = ({ history }) => {
     );
 };
 
-export default ItemSave;
+export default ItemEdit;

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import {authConfig, getLogger} from "../utils";
-import {ItemProps} from "../components/ItemProps";
+import {ItemProps} from "../components/props/ItemProps";
 import { withLogs, baseUrl } from "../utils";
 
 
@@ -13,6 +13,10 @@ export const getItems: (token: string) => Promise<ItemProps[]> = token => {
 
 export const createItem: (token: string, item: ItemProps) => Promise<ItemProps[]> = (token, item) => {
     return withLogs(axios.post(itemUrl, item, authConfig(token)), 'createItem');
+}
+
+export const updateItem: (token: string, item: ItemProps) => Promise<ItemProps[]> = (token, item) => {
+    return withLogs(axios.put(`${itemUrl}/edit/${item.id}`, item, authConfig(token)), 'updateItem');
 }
 
 export const getAuthors: (token: string) => Promise<string[]> = (token) => {

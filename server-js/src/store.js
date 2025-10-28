@@ -50,6 +50,14 @@ export class BookStore {
         return book;
     }
 
+    async update(props, item) {
+        const { title, author, published, available } = item;
+        await this.db.run('update books set title = ?, author = ?, published = ?, isAvailable = ? where id = ?',
+            [title, author, published, available, props.id]);
+
+        return 1;
+    }
+
     async getAuthors() {
         const rows = await this.db.all(
             'select distinct author from books where author is not null order by author asc'

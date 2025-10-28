@@ -5,7 +5,8 @@ import {
     IonLoading,
     IonPage,
     IonSearchbar,
-    IonList, IonButton, IonIcon, IonButtons, IonToolbar, IonInfiniteScroll, IonInfiniteScrollContent, IonText
+    IonList, IonButton, IonIcon, IonButtons, IonToolbar, IonInfiniteScroll, IonInfiniteScrollContent, IonText, IonLabel,
+    IonItem
 } from '@ionic/react';
 import {logOutOutline, searchCircle} from 'ionicons/icons';
 import {RouteComponentProps} from "react-router";
@@ -14,6 +15,7 @@ import Item from './Item';
 import './css/ItemList.css';
 import {AuthContext} from "../providers/AuthProvider";
 import {useNetwork} from "../hooks/useNetwork";
+import NetworkStatusIndicator from "./custom/NetwirkStatusIndicator";
 
 const ItemList: React.FC<RouteComponentProps> = () => {
     const { items = [], fetching, fetchingError } = useContext(ItemContext);
@@ -45,7 +47,6 @@ const ItemList: React.FC<RouteComponentProps> = () => {
         setDisableInfiniteScroll(firstPage.length >= filteredItems.length);
     }, [filteredItems]);
 
-
     // incarcare urmatoarele carti la scroll
     async function fetchData() {
         const nextSet = filteredItems.slice(loaded.length, loaded.length + 4);
@@ -65,9 +66,9 @@ const ItemList: React.FC<RouteComponentProps> = () => {
                 <IonToolbar>
 
                     <div className="network-status">
-                        <IonText color={networkStatus.connected ? 'success' : 'danger'}>
-                            {networkStatus.connected ? '🟢 Online' : '🔴 Offline'}
-                        </IonText>
+                        <IonItem lines="none">
+                            <NetworkStatusIndicator connected={networkStatus.connected ?? false} />
+                        </IonItem>
                     </div>
 
                     <IonSearchbar
@@ -95,6 +96,7 @@ const ItemList: React.FC<RouteComponentProps> = () => {
                             {loaded.map(({id, title, author, published, available}) => (
                                 <Item
                                     key={id}
+                                    id={id}
                                     title={title}
                                     author={author}
                                     published={published}
