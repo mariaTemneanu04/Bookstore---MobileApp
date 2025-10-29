@@ -11,7 +11,7 @@ import {
     IonInput,
     IonButton,
     IonText,
-    IonLoading, IonCheckbox,
+    IonLoading, IonCheckbox, IonImg, IonFab, IonIcon, IonFabButton, IonActionSheet,
 } from '@ionic/react';
 import './css/ItemSave.css';
 import {ItemProps} from './props/ItemProps';
@@ -19,6 +19,8 @@ import {getLogger} from '../utils';
 import {ItemContext} from '../providers/ItemProvider';
 import {RouteComponentProps, useHistory, useLocation, useParams} from 'react-router';
 import {format} from "date-fns";
+import {MyPhoto, usePhotos} from "../hooks/usePhoto";
+import {camera, trash, close} from "ionicons/icons";
 
 const log = getLogger('ItemSave');
 
@@ -58,13 +60,17 @@ const ItemEdit: React.FC<RouteComponentProps> = () => {
     const history = useHistory();
 
     const {items, saveItem, saving, savingError} = useContext(ItemContext);
+    const {photos, takePhoto, deletePhoto} = usePhotos();
+
     const [book, setBook] = useState<ItemProps | undefined>(undefined);
     const [original, setOriginal] = useState<ItemProps | undefined>(undefined);
+    const [photoToDelete, setPhotoToDelete] = useState<MyPhoto>();
 
     const [title, setTitle] = useState('');
     const [author, setAuthor] = useState('');
     const [published, setPublished] = useState<Date | undefined>(undefined);
     const [available, setAvailable] = useState(false);
+    const [photo, setPhoto] = useState<string | undefined>(undefined);
 
     const [hasChanges, setHasChanges] = useState(false);
 
@@ -81,6 +87,7 @@ const ItemEdit: React.FC<RouteComponentProps> = () => {
             setTitle(foundItem.title || '');
             setAuthor(foundItem.author || '');
             setAvailable(foundItem.available || false);
+            setPhoto(foundItem.photo);
 
             if (foundItem.published) {
                 const parsed = new Date(foundItem.published);
@@ -93,6 +100,11 @@ const ItemEdit: React.FC<RouteComponentProps> = () => {
         }
     }, [id, location.state, items]);
 
+    // const myPhoto: MyPhoto | undefined = photo ? {
+    //     filepath: `${book.id}.jpeg`,
+    //     webviewPath: `fata:image/jpeg;base64,${photo}`
+    //     } : undefined;
+
     useEffect(() => {
         if (!original) return;
 
@@ -100,12 +112,13 @@ const ItemEdit: React.FC<RouteComponentProps> = () => {
             title !== (original.title || '') ||
             author !== (original.author || '') ||
             available !== (original.available || false) ||
+            photo !== (original.photo || '') ||
             (published && original.published
                 ? new Date(published).getTime() !== new Date(original.published).getTime()
                 : published !== original.published);
 
         setHasChanges(changed);
-    }, [title, author, published, available, original]);
+    }, [title, author, published, available, photo, original]);
 
     const handleEdit = useCallback(async () => {
         if (!title) {
@@ -119,6 +132,7 @@ const ItemEdit: React.FC<RouteComponentProps> = () => {
             author,
             published: published || new Date(),
             available,
+            photo,
         };
 
         setHasChanges(false);
@@ -130,14 +144,14 @@ const ItemEdit: React.FC<RouteComponentProps> = () => {
                 history.goBack();
             });
         }
-    }, [book, saveItem, title, author, published, available, history]);
+    }, [book, saveItem, title, author, published, available, photo, history]);
 
     return (
         <IonPage>
             <IonContent fullscreen className="ion-padding add-book-content">
                 <IonCard className="add-book-card">
                     <IonCardHeader>
-                        <IonCardTitle className="title-style">Book Edit</IonCardTitle>
+                        <IonCardTitle className="title-style">Edit Book</IonCardTitle>
                     </IonCardHeader>
 
                     <IonCardContent>
@@ -149,9 +163,7 @@ const ItemEdit: React.FC<RouteComponentProps> = () => {
                                 className="custom-textfield"
                                 placeholder="Enter book title"
                                 value={title}
-                                onIonChange={(e) => {
-                                    setTitle(e.detail.value || '');
-                                }}
+                                onIonChange={(e) => setTitle(e.detail.value || '')}
                             />
                         </IonItem>
 
@@ -161,42 +173,64 @@ const ItemEdit: React.FC<RouteComponentProps> = () => {
                                 className="custom-textfield"
                                 placeholder="Enter author name"
                                 value={author}
-                                onIonChange={(e) => {
-                                    setAuthor(e.detail.value || '');
-                                }}
+                                onIonChange={(e) => setAuthor(e.detail.value || '')}
                             />
                         </IonItem>
 
                         <IonItem lines="full">
-                            <IonLabel position="fixed" className="label-style">
-                                Published Date
-                            </IonLabel>
+                            <IonLabel position="fixed" className="label-style">Published</IonLabel>
                             <IonInput
                                 className="custom-textfield"
                                 placeholder="dd/MM/yyyy"
                                 value={published ? format(new Date(published), 'dd/MM/yyyy') : ''}
                                 onIonChange={(e) => {
                                     const inputDate = parseDDMMYYYY(e.detail.value || '');
-                                    if (inputDate !== null) {
-                                        setPublished(inputDate);
-                                    } else {
-                                        e.detail.value = published ? format(new Date(published), 'dd/MM/yyyy') : '';
-                                    }
-
+                                    if (inputDate) setPublished(inputDate);
                                 }}
                             />
                         </IonItem>
 
+                        <IonItem lines="full">
+                            {photos.map((photo) => (
+                                <IonImg onClick={() => setPhotoToDelete(photo)} src={photo.webviewPath}/>
+                            ))}
+                        </IonItem>
+
+                        <IonFab horizontal="center" slot="fixed">
+                            <IonFabButton onClick={() => takePhoto()}>
+                                <IonIcon icon={camera}/>
+                            </IonFabButton>
+                        </IonFab>
+
+                        <IonActionSheet
+                            isOpen={!!photoToDelete}
+                            buttons={[{
+                                text: 'Delete',
+                                role: 'destructive',
+                                icon: trash,
+                                handler: () => {
+                                    if (photoToDelete) {
+                                        deletePhoto(photoToDelete);
+                                        setPhotoToDelete(undefined);
+                                    }
+                                }
+                            }, {
+                                text: 'Cancel',
+                                icon: close,
+                                role: 'cancel',
+                            }]}
+                            onDidDismiss={() => setPhotoToDelete(undefined)}/>
+
+                        {/* Availability */}
                         <IonItem lines="none">
                             <IonLabel>Available</IonLabel>
                             <IonCheckbox
                                 checked={available}
-                                onIonChange={(e) => {
-                                    setAvailable(e.detail.checked);
-                                }}
+                                onIonChange={(e) => setAvailable(e.detail.checked)}
                             />
                         </IonItem>
 
+                        {/* Save changes */}
                         <IonButton
                             expand="block"
                             className="save-button"
@@ -206,7 +240,7 @@ const ItemEdit: React.FC<RouteComponentProps> = () => {
                             {saving ? 'Saving...' : 'Save Changes'}
                         </IonButton>
 
-                        <IonLoading isOpen={saving} message="Saving book..."/>
+                        <IonLoading isOpen={saving} message="Saving book..." />
 
                         {savingError && (
                             <IonText color="danger">

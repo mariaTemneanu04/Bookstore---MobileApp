@@ -15,7 +15,7 @@ import {useHistory} from "react-router";
 
 const log = getLogger('Book');
 
-const Item: React.FC<ItemProps> = ({ id, title, author, published, available }) => {
+const Item: React.FC<ItemProps> = ({ id, title, author, published, available, photo }) => {
     const history = useHistory();
 
     const normalizedDate = Array.isArray(published)
@@ -23,6 +23,7 @@ const Item: React.FC<ItemProps> = ({ id, title, author, published, available }) 
         : new Date(published);
 
     const formattedDate = published ? format(normalizedDate, 'dd/MM/yyyy') : '';
+    const webviewPath = photo ? `data:image/jpeg;base64,${photo}` : null;
 
     log(`render ${title}`);
 
@@ -30,7 +31,7 @@ const Item: React.FC<ItemProps> = ({ id, title, author, published, available }) 
         log(`Navigating to edit for item: ${id}`);
         history.push({
             pathname: `/edit/${id}`,
-            state: { item: {id, title, author, published, available } },
+            state: { item: {id, title, author, published, available, photo } },
         });
     }
 
@@ -50,9 +51,22 @@ const Item: React.FC<ItemProps> = ({ id, title, author, published, available }) 
             </IonCardHeader>
 
             <IonCardContent>
-                <p>
-                    <strong>Published:</strong> {formattedDate}
-                </p>
+                <div className="book-content">
+                    {webviewPath ? (
+                        <img
+                            src={webviewPath}
+                            alt={`${title} cover`}
+                            className="book-image"
+                        />
+                    ) : (
+                        <div className="book-fallback">
+                            <span>No cover</span>
+                        </div>
+                    )}
+                    <div className="book-details">
+                        <p><strong>Published:</strong> {formattedDate}</p>
+                    </div>
+                </div>
             </IonCardContent>
         </IonCard>
     );

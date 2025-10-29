@@ -6,6 +6,7 @@ import {createItem, getItems, newWebSocket, updateItem} from "../rest/itemApi";
 import {Preferences} from '@capacitor/preferences';
 import {AuthContext} from "./AuthProvider";
 import {useNetwork} from "../hooks/useNetwork";
+import {usePhotos} from "../hooks/usePhoto";
 
 const log = getLogger('ItemProvider');
 
@@ -78,6 +79,7 @@ interface ItemProviderProps {
 export const ItemProvider: React.FC<ItemProviderProps> = ({children}) => {
     const {token} = useContext(AuthContext);
     const {networkStatus} = useNetwork();
+    const {savePhotoLocally, deletePhoto} = usePhotos();
 
     const [state, dispatch] = useReducer(reducer, initialState);
     const {items, fetching, fetchingError, saving, savingError} = state;
@@ -171,6 +173,12 @@ export const ItemProvider: React.FC<ItemProviderProps> = ({children}) => {
                 dispatch({type: FETCH_ITEMS_STARTED});
                 let items = await getItems(token);
 
+                items.forEach(item => {
+                    if (item.photo !== null) {
+                        savePhotoLocally(item.id!, item.photo!);
+                    }
+                });
+
                 const dirty = false;
                 items = items.map((i: ItemProps) => {
                     return { ...i, dirty: dirty };
@@ -205,6 +213,9 @@ export const ItemProvider: React.FC<ItemProviderProps> = ({children}) => {
                 log('saveItem item:', item);
 
                 const savedItem = await (item.id ? updateItem(token, item) : createItem(token, item));
+                if (item.id && item.photo !== null && item.photo !== undefined && item.photo !== '') {
+                    savePhotoLocally(item.id!, item.photo!);
+                }
 
                 log('saveItem succeeded');
                 dispatch({type: SAVE_ITEM_SUCCEEDED, payload: {item: savedItem}});
@@ -269,6 +280,9 @@ export const ItemProvider: React.FC<ItemProviderProps> = ({children}) => {
                         }
 
                         Preferences.set({key: 'books', value: JSON.stringify(array)});
+                        if (item.photo === null) {
+                            deletePhoto(`${item.id}.jpeg`);
+                        }
                     }
 
                     dispatch({type: SAVE_ITEM_SUCCEEDED, payload: {item}});

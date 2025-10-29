@@ -19,7 +19,10 @@ export class BookStore {
             author varchar(100),
             published varchar(30),
             isAvailable integer,
-            userId varchar(50)
+            userId varchar(50),
+            photo varchar(100),
+            latitude real,
+            longitude real
         );`)
     }
 
@@ -34,15 +37,15 @@ export class BookStore {
 
 
     async insert(book) {
-        if (!book.title) {
-            throw new Error('Book title cannot be empty');
+        if (!book.title || !book.userId) {
+            throw new Error('Title and UserID cannot be empty');
         }
 
-        const { title, author, published, available, userId } = book;
+        const { title, author, published, available, userId, photo, latitude, longitude } = book;
 
         await this.db.run(
-        'insert into books (title, author, published, isAvailable, userId) values (?, ?, ?, ?, ?)',
-            [title, author, published, available, userId]);
+        'insert into books (title, author, published, isAvailable, userId, photo, latitude, longitude) values (?, ?, ?, ?, ?)',
+            [title, author, published, available, userId, photo, latitude, longitude]);
 
         const { lastID } = await this.db.get('select last_insert_rowid() as lastID');
         book.id = lastID.toString();
@@ -51,9 +54,9 @@ export class BookStore {
     }
 
     async update(props, item) {
-        const { title, author, published, available } = item;
-        await this.db.run('update books set title = ?, author = ?, published = ?, isAvailable = ? where id = ?',
-            [title, author, published, available, props.id]);
+        const { title, author, published, available, photo, latitude, longitude } = item;
+        await this.db.run('update books set title = ?, author = ?, published = ?, isAvailable = ?, photo = ?, latitude = ?, longitude = ? where id = ?',
+            [title, author, published, available, photo, latitude, longitude, props.id]);
 
         return 1;
     }

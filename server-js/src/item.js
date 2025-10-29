@@ -20,10 +20,10 @@ bookRouter.get('/', async (ctx) => {
 const createBook = async (ctx, book, response) => {
     try {
         book.userId = ctx.state.user._id;
-        const bookToLog = { ...book };
+        const bookToLog = { ...book, photo: null };
         console.log(bookToLog);
         const newBook = await bookStore.insert(book);
-        const newBookToLog = { ...newBook };
+        const newBookToLog = { ...newBook, photo: null };
         console.log(newBookToLog);
         response.body = newBook;
         response.status = 201;

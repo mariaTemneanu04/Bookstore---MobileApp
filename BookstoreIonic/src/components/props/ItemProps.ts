@@ -5,4 +5,7 @@ export interface ItemProps {
     published: Date;
     available: boolean;
     dirty?: boolean;
+    photo?: string;
+    latitude?: number;
+    longitude?: number;
 }

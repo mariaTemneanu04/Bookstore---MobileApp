@@ -15,7 +15,7 @@ import Item from './Item';
 import './css/ItemList.css';
 import {AuthContext} from "../providers/AuthProvider";
 import {useNetwork} from "../hooks/useNetwork";
-import NetworkStatusIndicator from "./custom/NetwirkStatusIndicator";
+import NetworkStatusIndicator from "./custom/NetworkStatusIndicator";
 
 const ItemList: React.FC<RouteComponentProps> = () => {
     const { items = [], fetching, fetchingError } = useContext(ItemContext);
