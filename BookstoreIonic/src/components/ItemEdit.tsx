@@ -60,7 +60,7 @@ const ItemEdit: React.FC<RouteComponentProps> = () => {
     const history = useHistory();
 
     const {items, saveItem, saving, savingError} = useContext(ItemContext);
-    const {photos, takePhoto, deletePhoto} = usePhotos();
+    const {takePhoto, deletePhoto} = usePhotos();
 
     const [book, setBook] = useState<ItemProps | undefined>(undefined);
     const [original, setOriginal] = useState<ItemProps | undefined>(undefined);
@@ -100,10 +100,10 @@ const ItemEdit: React.FC<RouteComponentProps> = () => {
         }
     }, [id, location.state, items]);
 
-    // const myPhoto: MyPhoto | undefined = photo ? {
-    //     filepath: `${book.id}.jpeg`,
-    //     webviewPath: `fata:image/jpeg;base64,${photo}`
-    //     } : undefined;
+    const myPhoto: MyPhoto | undefined = photo ? {
+        filepath: `${id}.jpeg`,
+        webviewPath: `data:image/jpeg;base64,${photo}`
+        } : undefined;
 
     useEffect(() => {
         if (!original) return;
@@ -190,37 +190,6 @@ const ItemEdit: React.FC<RouteComponentProps> = () => {
                             />
                         </IonItem>
 
-                        <IonItem lines="full">
-                            {photos.map((photo) => (
-                                <IonImg onClick={() => setPhotoToDelete(photo)} src={photo.webviewPath}/>
-                            ))}
-                        </IonItem>
-
-                        <IonFab horizontal="center" slot="fixed">
-                            <IonFabButton onClick={() => takePhoto()}>
-                                <IonIcon icon={camera}/>
-                            </IonFabButton>
-                        </IonFab>
-
-                        <IonActionSheet
-                            isOpen={!!photoToDelete}
-                            buttons={[{
-                                text: 'Delete',
-                                role: 'destructive',
-                                icon: trash,
-                                handler: () => {
-                                    if (photoToDelete) {
-                                        deletePhoto(photoToDelete);
-                                        setPhotoToDelete(undefined);
-                                    }
-                                }
-                            }, {
-                                text: 'Cancel',
-                                icon: close,
-                                role: 'cancel',
-                            }]}
-                            onDidDismiss={() => setPhotoToDelete(undefined)}/>
-
                         {/* Availability */}
                         <IonItem lines="none">
                             <IonLabel>Available</IonLabel>
@@ -229,6 +198,53 @@ const ItemEdit: React.FC<RouteComponentProps> = () => {
                                 onIonChange={(e) => setAvailable(e.detail.checked)}
                             />
                         </IonItem>
+
+                        <IonItem lines="full">
+                            {myPhoto && (
+                                <IonImg
+                                    onClick={() => setPhotoToDelete(myPhoto)}
+                                    src={myPhoto.webviewPath}
+                                    alt={myPhoto.filepath}
+                                    style={{ width: '100%', height: 'auto' }} />
+                            )}
+
+                            <IonButton
+                                expand="block"
+                                className="save-button"
+                                onClick={async () =>  {
+                                    const newPhoto = await takePhoto();
+                                    setPhoto(newPhoto);
+                                    setHasChanges(true);
+                                }}>
+                                <IonIcon icon={camera} slot="start" />
+                                Take Picture
+                            </IonButton>
+
+                        </IonItem>
+
+                        <IonActionSheet
+                            isOpen={!!photoToDelete}
+                            buttons={[
+                                {
+                                    text: 'Delete',
+                                    role: 'destructive',
+                                    icon: trash,
+                                    handler: () => {
+                                        if (photoToDelete) {
+                                            deletePhoto(photoToDelete.filepath);
+                                            setPhoto(undefined);
+                                            setPhotoToDelete(undefined);
+                                        }
+                                    },
+                                },
+                                {
+                                    text: 'Cancel',
+                                    icon: close,
+                                    role: 'cancel',
+                                },
+                            ]}
+                            onDidDismiss={() => setPhotoToDelete(undefined)}
+                        />
 
                         {/* Save changes */}
                         <IonButton

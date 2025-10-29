@@ -93,7 +93,7 @@ const ItemList: React.FC<RouteComponentProps> = () => {
                 {loaded.length > 0 ? (
                     <>
                         <IonList>
-                            {loaded.map(({id, title, author, published, available}) => (
+                            {loaded.map(({id, title, author, published, available, photo}) => (
                                 <Item
                                     key={id}
                                     id={id}
@@ -101,6 +101,7 @@ const ItemList: React.FC<RouteComponentProps> = () => {
                                     author={author}
                                     published={published}
                                     available={available}
+                                    photo={photo}
                                 />
                             ))}
                         </IonList>

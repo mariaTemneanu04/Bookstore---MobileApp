@@ -23,7 +23,7 @@ const Item: React.FC<ItemProps> = ({ id, title, author, published, available, ph
         : new Date(published);
 
     const formattedDate = published ? format(normalizedDate, 'dd/MM/yyyy') : '';
-    const webviewPath = photo ? `data:image/jpeg;base64,${photo}` : null;
+    const webviewPath = `data:image/jpeg;base64,${photo}`;
 
     log(`render ${title}`);
 
@@ -52,10 +52,10 @@ const Item: React.FC<ItemProps> = ({ id, title, author, published, available, ph
 
             <IonCardContent>
                 <div className="book-content">
-                    {webviewPath ? (
+                    {photo ? (
                         <img
                             src={webviewPath}
-                            alt={`${title} cover`}
+                            alt={`${id}.jpg`}
                             className="book-image"
                         />
                     ) : (
