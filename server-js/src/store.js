@@ -44,7 +44,7 @@ export class BookStore {
         const { title, author, published, available, userId, photo, latitude, longitude } = book;
 
         await this.db.run(
-        'insert into books (title, author, published, isAvailable, userId, photo, latitude, longitude) values (?, ?, ?, ?, ?)',
+        'insert into books (title, author, published, isAvailable, userId, photo, latitude, longitude) values (?, ?, ?, ?, ?, ?, ?, ?)',
             [title, author, published, available, userId, photo, latitude, longitude]);
 
         const { lastID } = await this.db.get('select last_insert_rowid() as lastID');
