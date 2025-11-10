@@ -11,22 +11,23 @@ import {
     IonInput,
     IonButton,
     IonText,
-    IonLoading, IonCheckbox, IonImg, IonFab, IonIcon, IonFabButton, IonActionSheet,
+    IonLoading, IonCheckbox, IonImg, IonIcon, IonActionSheet,
 } from '@ionic/react';
 import './css/ItemSave.css';
 import {ItemProps} from './props/ItemProps';
 import {getLogger} from '../utils';
 import {ItemContext} from '../providers/ItemProvider';
-import {RouteComponentProps, useHistory, useLocation, useParams} from 'react-router';
+import {RouteComponentProps} from 'react-router';
 import {format} from "date-fns";
 import {MyPhoto, usePhotos} from "../hooks/usePhoto";
 import {camera, trash, close} from "ionicons/icons";
+import {useMyLocation} from "../hooks/useMyLocation";
+import MyMap from "./custom/MyMap";
 
-const log = getLogger('ItemSave');
+const log = getLogger('ItemEdit');
 
-interface RouteParams {
-    id: string;
-}
+interface ItemEditProps extends RouteComponentProps<{ id?: string }> { }
+
 
 function parseDDMMYYYY(dateString: string) {
     const [day, month, year] = dateString.split('/').map(Number);
@@ -52,18 +53,13 @@ function parseDDMMYYYY(dateString: string) {
     return parsedDate;
 }
 
-const ItemEdit: React.FC<RouteComponentProps> = () => {
-    log('render ItemEdit page');
-
-    const {id} = useParams<RouteParams>();
-    const location = useLocation<{ item?: ItemProps }>();
-    const history = useHistory();
+const ItemEdit: React.FC<ItemEditProps> = ({ history, match }) => {
+    log('RENDER ITEMEDIT PAGE <333');
 
     const {items, saveItem, saving, savingError} = useContext(ItemContext);
-    const {photos, takePhoto, deletePhoto} = usePhotos();
+    const {takePhoto, deletePhoto} = usePhotos();
 
     const [book, setBook] = useState<ItemProps | undefined>(undefined);
-    const [original, setOriginal] = useState<ItemProps | undefined>(undefined);
     const [photoToDelete, setPhotoToDelete] = useState<MyPhoto>();
 
     const [title, setTitle] = useState('');
@@ -72,22 +68,38 @@ const ItemEdit: React.FC<RouteComponentProps> = () => {
     const [available, setAvailable] = useState(false);
     const [photo, setPhoto] = useState<string | undefined>(undefined);
 
-    const [hasChanges, setHasChanges] = useState(false);
+    const [lat, setLat] = useState<number | undefined>(46.7712); // Cluj
+    const [lng, setLng] = useState<number | undefined>(23.6236);
+
+    const myLocation = useMyLocation();
+
+    const [unsavedChanges, setUnsavedChanges] = useState(false);
 
     useEffect(() => {
-        let foundItem: ItemProps | undefined = location.state?.item;
+        if (myLocation.position?.coords && !lat && !lng) {
+            const { latitude, longitude } = myLocation.position.coords;
 
-        if (!foundItem && items) {
-            foundItem = items.find((item) => item.id === id);
+            setLat(latitude);
+            setLng(longitude);
         }
+    }, [myLocation]);
+
+    useEffect(() => {
+        log('useEffect - Fetching book details');
+        const routeId = match.params.id || '';
+        const foundItem = items?.find((i) => i.id === routeId);
 
         if (foundItem) {
             setBook(foundItem);
-            setOriginal(foundItem);
             setTitle(foundItem.title || '');
             setAuthor(foundItem.author || '');
             setAvailable(foundItem.available || false);
             setPhoto(foundItem.photo);
+
+            if (foundItem.latitude && foundItem.longitude) {
+                setLat(foundItem.latitude);
+                setLng(foundItem.longitude);
+            }
 
             if (foundItem.published) {
                 const parsed = new Date(foundItem.published);
@@ -98,27 +110,12 @@ const ItemEdit: React.FC<RouteComponentProps> = () => {
 
             log('Loaded item for edit:', foundItem);
         }
-    }, [id, location.state, items]);
+    }, [match.params.id, items]);
 
-    // const myPhoto: MyPhoto | undefined = photo ? {
-    //     filepath: `${book.id}.jpeg`,
-    //     webviewPath: `fata:image/jpeg;base64,${photo}`
-    //     } : undefined;
-
-    useEffect(() => {
-        if (!original) return;
-
-        const changed =
-            title !== (original.title || '') ||
-            author !== (original.author || '') ||
-            available !== (original.available || false) ||
-            photo !== (original.photo || '') ||
-            (published && original.published
-                ? new Date(published).getTime() !== new Date(original.published).getTime()
-                : published !== original.published);
-
-        setHasChanges(changed);
-    }, [title, author, published, available, photo, original]);
+    const myPhoto: MyPhoto | undefined = photo ? {
+        filepath: `${book?.id}.jpeg`,
+        webviewPath: `data:image/jpeg;base64,${photo}`
+    } : undefined;
 
     const handleEdit = useCallback(async () => {
         if (!title) {
@@ -133,9 +130,11 @@ const ItemEdit: React.FC<RouteComponentProps> = () => {
             published: published || new Date(),
             available,
             photo,
+            latitude: lat,
+            longitude: lng,
         };
 
-        setHasChanges(false);
+        setUnsavedChanges(false);
         log('handleEdit - Saveing edited book');
 
         if (saveItem) {
@@ -144,7 +143,30 @@ const ItemEdit: React.FC<RouteComponentProps> = () => {
                 history.goBack();
             });
         }
-    }, [book, saveItem, title, author, published, available, photo, history]);
+    }, [book, saveItem, title, author, published, available, photo, lat, lng, history]);
+
+    const handleCancel = useCallback(() => {
+        if (unsavedChanges) {
+            const confirmLeave = window.confirm(
+                "You have unsaved changes. Are you sure you want to discard them?"
+            );
+            if (!confirmLeave) {
+                return; // utilizatorul a anulat ieșirea
+            }
+        }
+        log('handleCancel - Navigating back without saving');
+        history.goBack();
+    }, [unsavedChanges, history]);
+
+    const handleMapClick = useCallback((latLng: { latitude: number; longitude: number }) => {
+        const {latitude, longitude} = latLng;
+        log(`handleMapClick - lat: ${latitude}, lng: ${longitude}`);
+
+        setLat(latitude);
+        setLng(longitude);
+
+        setUnsavedChanges(true);
+    }, []);
 
     return (
         <IonPage>
@@ -163,7 +185,10 @@ const ItemEdit: React.FC<RouteComponentProps> = () => {
                                 className="custom-textfield"
                                 placeholder="Enter book title"
                                 value={title}
-                                onIonChange={(e) => setTitle(e.detail.value || '')}
+                                onIonChange={(e) => {
+                                    setUnsavedChanges(true);
+                                    setTitle(e.detail.value || '')}
+                                }
                             />
                         </IonItem>
 
@@ -173,7 +198,10 @@ const ItemEdit: React.FC<RouteComponentProps> = () => {
                                 className="custom-textfield"
                                 placeholder="Enter author name"
                                 value={author}
-                                onIonChange={(e) => setAuthor(e.detail.value || '')}
+                                onIonChange={(e) => {
+                                    setUnsavedChanges(true);
+                                    setAuthor(e.detail.value || '')}
+                                }
                             />
                         </IonItem>
 
@@ -185,62 +213,103 @@ const ItemEdit: React.FC<RouteComponentProps> = () => {
                                 value={published ? format(new Date(published), 'dd/MM/yyyy') : ''}
                                 onIonChange={(e) => {
                                     const inputDate = parseDDMMYYYY(e.detail.value || '');
-                                    if (inputDate) setPublished(inputDate);
+                                    if (inputDate) {
+                                        setPublished(inputDate);
+                                        setUnsavedChanges(true);
+                                    }
                                 }}
                             />
                         </IonItem>
-
-                        <IonItem lines="full">
-                            {photos.map((photo) => (
-                                <IonImg onClick={() => setPhotoToDelete(photo)} src={photo.webviewPath}/>
-                            ))}
-                        </IonItem>
-
-                        <IonFab horizontal="center" slot="fixed">
-                            <IonFabButton onClick={() => takePhoto()}>
-                                <IonIcon icon={camera}/>
-                            </IonFabButton>
-                        </IonFab>
-
-                        <IonActionSheet
-                            isOpen={!!photoToDelete}
-                            buttons={[{
-                                text: 'Delete',
-                                role: 'destructive',
-                                icon: trash,
-                                handler: () => {
-                                    if (photoToDelete) {
-                                        deletePhoto(photoToDelete);
-                                        setPhotoToDelete(undefined);
-                                    }
-                                }
-                            }, {
-                                text: 'Cancel',
-                                icon: close,
-                                role: 'cancel',
-                            }]}
-                            onDidDismiss={() => setPhotoToDelete(undefined)}/>
 
                         {/* Availability */}
                         <IonItem lines="none">
                             <IonLabel>Available</IonLabel>
                             <IonCheckbox
                                 checked={available}
-                                onIonChange={(e) => setAvailable(e.detail.checked)}
+                                onIonChange={(e) => {
+                                    setAvailable(e.detail.checked);
+                                    setUnsavedChanges(true);
+                                }
+                                }
                             />
                         </IonItem>
+
+                        <IonItem lines="full">
+                            {myPhoto && (
+                                <IonImg
+                                    onClick={() => setPhotoToDelete(myPhoto)}
+                                    src={myPhoto.webviewPath}
+                                    alt={myPhoto.filepath}
+                                    style={{width: '100%', height: 'auto'}}/>
+                            )}
+
+                            <IonButton
+                                expand="block"
+                                className="save-button"
+                                onClick={async () => {
+                                    const newPhoto = await takePhoto();
+                                    setPhoto(newPhoto);
+                                    setUnsavedChanges(true);
+                                }}>
+                                <IonIcon icon={camera} slot="start"/>
+                                Take Picture
+                            </IonButton>
+
+                        </IonItem>
+
+                        <IonActionSheet
+                            isOpen={!!photoToDelete}
+                            buttons={[
+                                {
+                                    text: 'Delete',
+                                    role: 'destructive',
+                                    icon: trash,
+                                    handler: async () => {
+                                        if (photoToDelete) {
+                                            try {
+                                                await deletePhoto(photoToDelete.filepath);
+                                            } catch (err) {
+                                                log('deletePhoto skipped - file does not exist');
+                                            }
+                                            setPhoto(undefined);
+                                            setPhotoToDelete(undefined);
+                                            setUnsavedChanges(true);
+                                        }
+                                    },
+                                },
+                                {
+                                    text: 'Cancel',
+                                    icon: close,
+                                    role: 'cancel',
+                                },
+                            ]}
+                            onDidDismiss={() => setPhotoToDelete(undefined)}
+                        />
+
+                        {lat && lng &&
+                            <MyMap lat={lat} lng={lng} onMapClick={handleMapClick} />
+                        }
 
                         {/* Save changes */}
                         <IonButton
                             expand="block"
                             className="save-button"
                             onClick={handleEdit}
-                            disabled={!hasChanges || saving}
+                            disabled={!unsavedChanges || saving}
                         >
                             {saving ? 'Saving...' : 'Save Changes'}
                         </IonButton>
 
-                        <IonLoading isOpen={saving} message="Saving book..." />
+                        <IonButton
+                            expand="block"
+                            className="cancel-button"
+                            color="medium"
+                            onClick={handleCancel}
+                        >
+                            Cancel
+                        </IonButton>
+
+                        <IonLoading isOpen={saving} message="Saving book..."/>
 
                         {savingError && (
                             <IonText color="danger">

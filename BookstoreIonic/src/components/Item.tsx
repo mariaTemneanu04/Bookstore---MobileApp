@@ -11,35 +11,32 @@ import {
 import { ItemProps } from './props/ItemProps';
 import { format } from 'date-fns';
 import './css/ItemList.css';
-import {useHistory} from "react-router";
 
 const log = getLogger('Book');
 
-const Item: React.FC<ItemProps> = ({ id, title, author, published, available, photo }) => {
-    const history = useHistory();
+interface ItemPropsExt extends ItemProps {
+    onEdit: (id?: string) => void;
+}
 
+const Item: React.FC<ItemPropsExt> = ({ id, title, author, published, available, photo, latitude, longitude, onEdit }) => {
     const normalizedDate = Array.isArray(published)
         ? new Date(published[0], published[1] - 1, published[2], published[3], published[4])
         : new Date(published);
 
     const formattedDate = published ? format(normalizedDate, 'dd/MM/yyyy') : '';
-    const webviewPath = photo ? `data:image/jpeg;base64,${photo}` : null;
+    const webviewPath = `data:image/jpeg;base64,${photo}`;
 
     log(`render ${title}`);
 
-    const handleClick = () => {
-        log(`Navigating to edit for item: ${id}`);
-        history.push({
-            pathname: `/edit/${id}`,
-            state: { item: {id, title, author, published, available, photo } },
-        });
-    }
+    const latText = latitude !== undefined && latitude !== null ? latitude.toFixed(4) : 'null';
+    const lngText = longitude !== undefined && longitude !== null ? longitude.toFixed(4) : 'null';
 
     return (
         <IonCard
             button
-            onClick={handleClick}
-            className={`book-card ${available ? 'available-card' : 'unavailable-card'}`}>
+            onClick={() => onEdit(id)}
+            className={`book-card ${available ? 'available-card' : 'unavailable-card'}`}
+        >
             <IonCardHeader>
                 <div className="book-header">
                     <IonCardTitle className="book-title">{title}</IonCardTitle>
@@ -47,15 +44,20 @@ const Item: React.FC<ItemProps> = ({ id, title, author, published, available, ph
                         {available ? 'Available' : 'Unavailable'}
                     </IonBadge>
                 </div>
+
+                <p className="book-coordinates">
+                    <small>📍 Lat: {latText}, Lng: {lngText}</small>
+                </p>
+
                 <IonCardSubtitle>by {author || 'Unknown author'}</IonCardSubtitle>
             </IonCardHeader>
 
             <IonCardContent>
                 <div className="book-content">
-                    {webviewPath ? (
+                    {photo ? (
                         <img
                             src={webviewPath}
-                            alt={`${title} cover`}
+                            alt={`${id}.jpg`}
                             className="book-image"
                         />
                     ) : (

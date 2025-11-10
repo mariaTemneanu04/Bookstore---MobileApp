@@ -5,7 +5,7 @@ import {
     IonLoading,
     IonPage,
     IonSearchbar,
-    IonList, IonButton, IonIcon, IonButtons, IonToolbar, IonInfiniteScroll, IonInfiniteScrollContent, IonText, IonLabel,
+    IonList, IonButton, IonIcon, IonButtons, IonToolbar,
     IonItem
 } from '@ionic/react';
 import {logOutOutline, searchCircle} from 'ionicons/icons';
@@ -17,13 +17,13 @@ import {AuthContext} from "../providers/AuthProvider";
 import {useNetwork} from "../hooks/useNetwork";
 import NetworkStatusIndicator from "./custom/NetworkStatusIndicator";
 
-const ItemList: React.FC<RouteComponentProps> = () => {
+const ItemList: React.FC<RouteComponentProps> = ({ history }) => {
     const { items = [], fetching, fetchingError } = useContext(ItemContext);
-    const {logout} = useContext(AuthContext);
+    const { logout } = useContext(AuthContext);
     const { networkStatus } = useNetwork();
 
-    const [disableInfiniteScroll, setDisableInfiniteScroll] = useState<boolean>(false);
-    const [loaded, setLoaded] = useState<any[]>([]);
+    // const [disableInfiniteScroll, setDisableInfiniteScroll] = useState<boolean>(false);
+    // const [loaded, setLoaded] = useState<any[]>([]);
     const [search, setSearch] = useState<string>('');
     const [filteredItems, setFilteredItems] = useState<any[]>([]);
 
@@ -41,24 +41,24 @@ const ItemList: React.FC<RouteComponentProps> = () => {
         setFilteredItems(filtered);
     }, [items, search]);
 
-    useEffect(() => {
-        const firstPage = filteredItems.slice(0, 4);
-        setLoaded(firstPage);
-        setDisableInfiniteScroll(firstPage.length >= filteredItems.length);
-    }, [filteredItems]);
+    // useEffect(() => {
+    //     const firstPage = filteredItems.slice(0, 4);
+    //     setLoaded(firstPage);
+    //     setDisableInfiniteScroll(firstPage.length >= filteredItems.length);
+    // }, [filteredItems]);
 
     // incarcare urmatoarele carti la scroll
-    async function fetchData() {
-        const nextSet = filteredItems.slice(loaded.length, loaded.length + 4);
-        setLoaded([...loaded, ...nextSet]);
-        setDisableInfiniteScroll(loaded.length + nextSet.length >= filteredItems.length);
-    }
-
-    async function searchNext($event: CustomEvent<void>) {
-        await fetchData();
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        await ($event.target as HTMLIonInfiniteScrollElement).complete();
-    }
+    // async function fetchData() {
+    //     const nextSet = filteredItems.slice(loaded.length, loaded.length + 5);
+    //     setLoaded([...loaded, ...nextSet]);
+    //     setDisableInfiniteScroll(loaded.length + nextSet.length >= filteredItems.length);
+    // }
+    //
+    // async function searchNext($event: CustomEvent<void>) {
+    //     await fetchData();
+    //     await new Promise(resolve => setTimeout(resolve, 3000));
+    //     await ($event.target as HTMLIonInfiniteScrollElement).complete();
+    // }
 
     return (
         <IonPage>
@@ -90,10 +90,10 @@ const ItemList: React.FC<RouteComponentProps> = () => {
             <IonContent fullscreen className="ion-padding book-list-content">
                 <IonLoading isOpen={fetching} message="Loading books..."/>
 
-                {loaded.length > 0 ? (
+                {filteredItems.length > 0 ? (
                     <>
                         <IonList>
-                            {loaded.map(({id, title, author, published, available}) => (
+                            {filteredItems.map(({id, title, author, published, available, photo, latitude, longitude}) => (
                                 <Item
                                     key={id}
                                     id={id}
@@ -101,19 +101,23 @@ const ItemList: React.FC<RouteComponentProps> = () => {
                                     author={author}
                                     published={published}
                                     available={available}
+                                    photo={photo}
+                                    latitude={latitude}
+                                    longitude={longitude}
+                                    onEdit={(id) => history.push(`/edit/${id}`)}
                                 />
                             ))}
                         </IonList>
 
-                        <IonInfiniteScroll
-                            threshold="88px"
-                            disabled={disableInfiniteScroll}
-                            onIonInfinite={(e: CustomEvent<void>) => searchNext(e)}>
+                        {/*<IonInfiniteScroll*/}
+                        {/*    threshold="100px"*/}
+                        {/*    disabled={disableInfiniteScroll}*/}
+                        {/*    onIonInfinite={(e: CustomEvent<void>) => searchNext(e)}>*/}
 
-                            <IonInfiniteScrollContent
-                                loadingSpinner="bubbles"
-                                loadingText="Loading more books..."/>
-                        </IonInfiniteScroll>
+                        {/*    <IonInfiniteScrollContent*/}
+                        {/*        loadingSpinner="bubbles"*/}
+                        {/*        loadingText="Loading more books..."/>*/}
+                        {/*</IonInfiniteScroll>*/}
                     </>
                 ) : (
                     !fetching && <p className="empty-message">No books available yet</p>

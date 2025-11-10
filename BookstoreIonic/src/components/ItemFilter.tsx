@@ -23,7 +23,7 @@ import { getAuthors } from "../rest/itemApi";
 
 const log = getLogger('BookFilter');
 
-const ItemFilter: React.FC<RouteComponentProps> = () => {
+const ItemFilter: React.FC<RouteComponentProps> = ({ history }) => {
     const { items = [] } = useContext(ItemContext);
     const { token } = useContext(AuthContext);
 
@@ -92,7 +92,7 @@ const ItemFilter: React.FC<RouteComponentProps> = () => {
 
                 {filteredItems.length > 0 ? (
                     <IonList>
-                        {filteredItems.map(({ id, title, author, published, available, photo }) => (
+                        {filteredItems.map(({ id, title, author, published, available, photo, latitude, longitude }) => (
                             <Item
                                 key={id}
                                 id={id}
@@ -101,6 +101,9 @@ const ItemFilter: React.FC<RouteComponentProps> = () => {
                                 published={published}
                                 available={available}
                                 photo={photo}
+                                latitude={latitude}
+                                longitude={longitude}
+                                onEdit={(id) => history.push(`/edit/${id}`)}
                             />
                         ))}
                     </IonList>
