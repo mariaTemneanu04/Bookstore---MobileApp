@@ -3,3 +3,221 @@
     --ion-toolbar-background: #7c6255;
     --ion-toolbar-color: #fff;
 }
+ /* ======== Item.css ======== */
+.book-card-container {
+    margin: 16px;
+    border-radius: 16px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    --background: #fffdf8;
+}
+
+.book-card-container:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15)
+}
+
+.available-card-container {
+    --background: #EADDCA;
+    --color: #065f46;
+}
+
+.unavailable-card-container {
+    --background: #b39687;
+    --color: #818589;
+}
+
+.book-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.book-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #5b4636;
+}
+
+.book-image {
+    width: 70px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.availability-tag {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: white;
+    text-transform: uppercase;
+    font-family: "Times New Roman", serif;
+}
+
+.available {
+    background-color: #16a34a;
+}
+
+.unavailable {
+    background-color: #dc2626;
+}
+
+
+.book-fallback {
+    width: 70px;
+    height: 100px;
+    background-color: #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 0.8rem;
+    font-style: italic;
+    text-align: center;
+}
+
+.book-coordinates {
+    margin-top: 4px;
+    color: #666;
+    font-size: 0.85rem;
+}
+
+.book-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+/* ======== ItemList.css ======== */
+.item-list-content {
+    background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.custom-searchbar {
+    width: 70%;
+    margin: 0 auto;
+    --background: #b1a89f;
+    --color: black;
+    --placeholder-color: #474545;
+    --icon-color: #967969;
+
+    --border-radius: 10px;
+    --box-shadow: none;
+
+    --padding-start: 15px;
+    --padding-end: 15px;
+    --padding-top: 5px;
+    --padding-bottom: 5px;
+
+    font-family: "Times New Roman", serif;
+    font-size: 14px;
+    text-align: center;
+}
+
+.custom-searchbar:focus-within {
+    --background: #E8D3B5;
+    --placeholder-color: black;
+}
+
+.error-message {
+    color: #d32f2f;
+    text-align: center;
+    font-weight: 500;
+    margin-top: 20px;
+}
+
+.empty-message {
+    text-align: center;
+    color: #64748b;
+    font-style: italic;
+    margin-top: 40px;
+}
+
+
+/* ======== ItemSave.css ======== */
+.input-book-container {
+    margin: 20px;
+    border-radius: 16px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    background: #EADDCA;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+ion-item {
+    --background: transparent;
+    --padding-start: 0;
+    margin-bottom: 14px;
+    align-items: center;
+}
+
+.label{
+    color: #4C392D;
+    font-weight: bold;
+    font-size: 30px;
+    font-family: "Times New Roman", serif;
+}
+
+.page-title {
+    text-align: center;
+    color: #4C392D;
+    font-weight: bold;
+    font-size: 30px;
+    font-family: "Times New Roman", serif;
+}
+
+.textfield {
+    background-color: #FDEBDD;
+    border-radius: 10px;
+    color: black;
+    font-size: 14px;
+    font-family: "Times New Roman", serif;
+    padding: 5px 15px;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.textfield::placeholder {
+    color: #BEB5AC;
+    text-align: center;
+}
+
+.button {
+    --background: #4C392D;
+    --color: white;
+    border-radius: 10px;
+    font-weight: bold;
+    display: block;
+    margin: 20px auto;
+    width: 60%;
+}
+
+.custom-toast {
+    --background: lightcoral;
+    --border-radius: 10px;
+    --color: white;
+    text-align: center;
+    max-width: 50%;
+    margin-left: auto;
+    margin-right: auto;
+    top: 90%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    position: fixed;
+    align-items: center;
+}
+
+/* ======== useNetwork.css ======== */
+.network-status {
+    position: absolute;
+    top: 12px;
+    left: 16px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}

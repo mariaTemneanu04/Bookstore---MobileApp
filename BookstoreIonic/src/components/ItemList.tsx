@@ -12,7 +12,7 @@ import {logOutOutline, searchCircle} from 'ionicons/icons';
 import {RouteComponentProps} from "react-router";
 import {ItemContext} from "../providers/ItemProvider";
 import Item from './Item';
-import './css/ItemList.css';
+import '../theme/variables.css'
 import {AuthContext} from "../providers/AuthProvider";
 import {useNetwork} from "../hooks/useNetwork";
 import NetworkStatusIndicator from "./custom/NetworkStatusIndicator";

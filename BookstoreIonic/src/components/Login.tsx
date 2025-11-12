@@ -8,13 +8,14 @@ import {
     IonLoading,
     IonPage,
     IonText,
-    IonTitle,
     IonToolbar
 } from '@ionic/react';
 import { AuthContext } from '../providers/AuthProvider';
 import { getLogger } from '../utils';
 import {useNetwork} from "../hooks/useNetwork";
-import "./css/Login.css";
+import { useIonToast} from "../hooks/useIonToast";
+
+import '../theme/variables.css'
 
 const log = getLogger('Login');
 
@@ -33,6 +34,8 @@ export const Login: React.FC<RouteComponentProps> = ({ history }) => {
     });
 
     const { username, password } = state;
+    const { showToast, ToastComponent, getErrorMessage } = useIonToast();
+
     const isLoginDisabled = !username || !password;
 
     const handlePasswordChange = useCallback((e: any) => setState({
@@ -58,13 +61,15 @@ export const Login: React.FC<RouteComponentProps> = ({ history }) => {
             log('redirecting to home');
             history.push('/');
         }
-    }, [isAuthenticated, history]);
+    }, [isAuthenticated]);
 
     useEffect(() => {
         if (authenticationError) {
-            alert("Authentication Error");
+            showToast({
+                message: getErrorMessage(authenticationError) || 'Failed to authenticate.',
+            });
         }
-    }, [authenticationError, history]);
+    }, [authenticationError, showToast]);
 
     return (
         <IonPage>
@@ -97,7 +102,10 @@ export const Login: React.FC<RouteComponentProps> = ({ history }) => {
                     onClick={handleLogin}>
                     Login
                 </IonButton>
+                {ToastComponent}
             </IonContent>
         </IonPage>
     );
 };
+
+export default Login;

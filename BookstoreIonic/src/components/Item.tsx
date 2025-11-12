@@ -10,7 +10,7 @@ import {
 } from '@ionic/react';
 import { ItemProps } from './props/ItemProps';
 import { format } from 'date-fns';
-import './css/ItemList.css';
+import '../theme/variables.css'
 
 const log = getLogger('Book');
 
@@ -35,7 +35,7 @@ const Item: React.FC<ItemPropsExt> = ({ id, title, author, published, available,
         <IonCard
             button
             onClick={() => onEdit(id)}
-            className={`book-card ${available ? 'available-card' : 'unavailable-card'}`}
+            className={`book-card-container ${available ? 'available-card-container' : 'unavailable-card-container'}`}
         >
             <IonCardHeader>
                 <div className="book-header">

@@ -1,4 +1,4 @@
-import React, { useContext, useState, useCallback } from 'react';
+import React, { useContext, useState, useCallback, useEffect } from 'react';
 import {
     IonPage,
     IonContent,
@@ -11,14 +11,17 @@ import {
     IonInput,
     IonButton,
     IonText,
-    IonLoading, IonCheckbox,
+    IonLoading,
+    IonCheckbox,
+    createAnimation
 } from '@ionic/react';
-import './css/ItemSave.css';
+
+import '../theme/variables.css';
 import { ItemProps } from './props/ItemProps';
 import { getLogger } from '../utils';
 import { ItemContext } from '../providers/ItemProvider';
 import { RouteComponentProps } from 'react-router';
-import {format} from "date-fns";
+import { format } from 'date-fns';
 
 const log = getLogger('ItemSave');
 
@@ -56,11 +59,15 @@ const ItemSave: React.FC<RouteComponentProps> = ({ history }) => {
     const [author, setAuthor] = useState('');
     const [published, setPublished] = useState<Date | undefined>(undefined);
     const [available, setAvailable] = useState(false);
+    const [shakeAnimation, setShakeAnimation] = useState(false);
 
     const handleSave = useCallback(async () => {
         try {
             if (!title) {
-                alert("title is required");
+                setShakeAnimation(true);
+                setTimeout(() => {
+                    setShakeAnimation(false);
+                }, 1000);
                 return;
             }
 
@@ -80,75 +87,111 @@ const ItemSave: React.FC<RouteComponentProps> = ({ history }) => {
             log('Save failed', error);
         }
     }, [book, saveItem, title, author, published, available, history]);
+    
+    useEffect(() => {
+        if (shakeAnimation) {
+            const emptyInputFields: HTMLElement[] = [];
+
+            if (!title.trim()) {
+                const titleInput = document.querySelector('.inputContainer.title input');
+                if (titleInput) {
+                    emptyInputFields.push(titleInput as HTMLElement);
+                }
+            }
+
+            if (emptyInputFields.length > 0) {
+                emptyInputFields.forEach((inputField) => {
+                    const container = inputField.closest('.inputContainer');
+                    if (container) {
+                        const animation = createAnimation()
+                            .addElement(container)
+                            .duration(500)
+                            .direction('alternate')
+                            .iterations(3)
+                            .keyframes([
+                                { offset: 0, transform: 'translateX(0)' },
+                                { offset: 0.25, transform: 'translateX(-10px)' },
+                                { offset: 0.5, transform: 'translateX(10px)' },
+                                { offset: 0.75, transform: 'translateX(-10px)' },
+                                { offset: 1, transform: 'translateX(0)' },
+                            ]);
+                        animation.play();
+                    }
+                });
+            }
+        }
+    }, [shakeAnimation, title, author]);
 
     return (
         <IonPage>
             <IonContent fullscreen className="ion-padding add-book-content">
-                <IonCard className="add-book-card">
+                <IonCard className="input-book-container">
                     <IonCardHeader>
-                        <IonCardTitle className="title-style">Book Details</IonCardTitle>
+                        <IonCardTitle className="page-title">Book Details</IonCardTitle>
                     </IonCardHeader>
 
                     <IonCardContent>
-                        <IonItem lines="full">
-                            <IonLabel position="fixed" className="label-style">
-                                Title <IonText color="danger">*</IonText>
-                            </IonLabel>
-                            <IonInput
-                                className="custom-textfield"
-                                placeholder="Enter book title"
-                                value={title}
-                                onIonChange={(e) => {
-                                    setTitle(e.detail.value || '');
-                                }}
-                            />
-                        </IonItem>
+                        {/* 🔹 Am adăugat clase pentru selectare în animație */}
+                        <div className="inputContainer title">
+                            <IonItem lines="full">
+                                <IonLabel position="fixed" className="label">
+                                    Title <IonText color="danger">*</IonText>
+                                </IonLabel>
+                                <IonInput
+                                    className="textfield"
+                                    placeholder="Enter book title"
+                                    value={title}
+                                    onIonChange={(e) => setTitle(e.detail.value || '')}
+                                />
+                            </IonItem>
+                        </div>
 
-                        <IonItem lines="full">
-                            <IonLabel position="fixed" className="label-style">Author</IonLabel>
-                            <IonInput
-                                className="custom-textfield"
-                                placeholder="Enter author name"
-                                value={author}
-                                onIonChange={(e) => {
-                                    setAuthor(e.detail.value || '');
-                                }}
-                            />
-                        </IonItem>
+                        <div className="inputContainer author">
+                            <IonItem lines="full">
+                                <IonLabel position="fixed" className="label">Author</IonLabel>
+                                <IonInput
+                                    className="textfield"
+                                    placeholder="Enter author name"
+                                    value={author}
+                                    onIonChange={(e) => setAuthor(e.detail.value || '')}
+                                />
+                            </IonItem>
+                        </div>
 
-                        <IonItem lines="full">
-                            <IonLabel position="fixed" className="label-style">
-                                Published Date
-                            </IonLabel>
-                            <IonInput
-                                className="custom-textfield"
-                                placeholder="dd/MM/yyyy"
-                                value={published ? format(new Date(published), 'dd/MM/yyyy') : ''}
-                                onIonChange={(e) => {
-                                    const inputDate = parseDDMMYYYY(e.detail.value || '');
-                                    if (inputDate !== null) {
-                                        setPublished(inputDate);
-                                    } else {
-                                        e.detail.value = published ? format(new Date(published), 'dd/MM/yyyy') : '';
-                                    }
+                        <div className="inputContainer published">
+                            <IonItem lines="full">
+                                <IonLabel position="fixed" className="label">
+                                    Published Date
+                                </IonLabel>
+                                <IonInput
+                                    className="textfield"
+                                    placeholder="dd/MM/yyyy"
+                                    value={published ? format(new Date(published), 'dd/MM/yyyy') : ''}
+                                    onIonChange={(e) => {
+                                        const inputDate = parseDDMMYYYY(e.detail.value || '');
+                                        if (inputDate !== null) {
+                                            setPublished(inputDate);
+                                        } else {
+                                            e.detail.value = published ? format(new Date(published), 'dd/MM/yyyy') : '';
+                                        }
+                                    }}
+                                />
+                            </IonItem>
+                        </div>
 
-                                }}
-                            />
-                        </IonItem>
-
-                        <IonItem lines="none">
-                            <IonLabel>Available</IonLabel>
-                            <IonCheckbox
-                                checked={available}
-                                onIonChange={(e) => {
-                                    setAvailable(e.detail.checked);
-                                }}
-                            />
-                        </IonItem>
+                        <div className="inputContainer availability">
+                            <IonItem lines="none">
+                                <IonLabel>Available</IonLabel>
+                                <IonCheckbox
+                                    checked={available}
+                                    onIonChange={(e) => setAvailable(e.detail.checked)}
+                                />
+                            </IonItem>
+                        </div>
 
                         <IonButton
                             expand="block"
-                            className="save-button"
+                            className="button"
                             onClick={handleSave}
                             disabled={saving}
                         >

@@ -15,7 +15,7 @@ import {
     IonSelect,
     IonSelectOption,
 } from "@ionic/react";
-import './css/ItemSave.css';
+import '../theme/variables.css'
 import { getLogger } from "../utils";
 import Item from "./Item";
 import { AuthContext } from "../providers/AuthProvider";
@@ -57,9 +57,9 @@ const ItemFilter: React.FC<RouteComponentProps> = ({ history }) => {
     return (
         <IonPage>
             <IonContent fullscreen className="ion-padding book-list-content">
-                <IonCard className="add-book-card">
+                <IonCard className="filter-book-card">
                     <IonCardHeader>
-                        <IonCardTitle className="title-text">Filter Books</IonCardTitle>
+                        <IonCardTitle className="page-title">Filter Books</IonCardTitle>
                     </IonCardHeader>
 
                     <IonCardContent>

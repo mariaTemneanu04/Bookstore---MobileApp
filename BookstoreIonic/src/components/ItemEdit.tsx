@@ -11,9 +11,14 @@ import {
     IonInput,
     IonButton,
     IonText,
-    IonLoading, IonCheckbox, IonImg, IonIcon, IonActionSheet,
+    IonLoading,
+    IonCheckbox,
+    IonImg,
+    IonIcon,
+    IonActionSheet,
+    createAnimation
 } from '@ionic/react';
-import './css/ItemSave.css';
+import '../theme/variables.css'
 import {ItemProps} from './props/ItemProps';
 import {getLogger} from '../utils';
 import {ItemContext} from '../providers/ItemProvider';
@@ -27,7 +32,6 @@ import MyMap from "./custom/MyMap";
 const log = getLogger('ItemEdit');
 
 interface ItemEditProps extends RouteComponentProps<{ id?: string }> { }
-
 
 function parseDDMMYYYY(dateString: string) {
     const [day, month, year] = dateString.split('/').map(Number);
@@ -49,7 +53,6 @@ function parseDDMMYYYY(dateString: string) {
         log('Invalid date');
         return null;
     }
-
     return parsedDate;
 }
 
@@ -58,32 +61,30 @@ const ItemEdit: React.FC<ItemEditProps> = ({ history, match }) => {
 
     const {items, saveItem, saving, savingError} = useContext(ItemContext);
     const {takePhoto, deletePhoto} = usePhotos();
+    const myLocation = useMyLocation();
 
     const [book, setBook] = useState<ItemProps | undefined>(undefined);
     const [photoToDelete, setPhotoToDelete] = useState<MyPhoto>();
-
     const [title, setTitle] = useState('');
     const [author, setAuthor] = useState('');
     const [published, setPublished] = useState<Date | undefined>(undefined);
     const [available, setAvailable] = useState(false);
     const [photo, setPhoto] = useState<string | undefined>(undefined);
-
-    const [lat, setLat] = useState<number | undefined>(46.7712); // Cluj
+    const [lat, setLat] = useState<number | undefined>(46.7712);
     const [lng, setLng] = useState<number | undefined>(23.6236);
-
-    const myLocation = useMyLocation();
-
     const [unsavedChanges, setUnsavedChanges] = useState(false);
+    const [shakeAnimation, setShakeAnimation] = useState(false);
 
+    // Set location defaults
     useEffect(() => {
         if (myLocation.position?.coords && !lat && !lng) {
             const { latitude, longitude } = myLocation.position.coords;
-
             setLat(latitude);
             setLng(longitude);
         }
     }, [myLocation]);
 
+    // Load item details
     useEffect(() => {
         log('useEffect - Fetching book details');
         const routeId = match.params.id || '';
@@ -117,9 +118,11 @@ const ItemEdit: React.FC<ItemEditProps> = ({ history, match }) => {
         webviewPath: `data:image/jpeg;base64,${photo}`
     } : undefined;
 
+    // Handle save
     const handleEdit = useCallback(async () => {
-        if (!title) {
-            alert("title is required");
+        if (!title.trim()) {
+            setShakeAnimation(true);
+            setTimeout(() => setShakeAnimation(false), 1000);
             return;
         }
 
@@ -135,7 +138,7 @@ const ItemEdit: React.FC<ItemEditProps> = ({ history, match }) => {
         };
 
         setUnsavedChanges(false);
-        log('handleEdit - Saveing edited book');
+        log('handleEdit - Saving edited book');
 
         if (saveItem) {
             saveItem(edited).then(() => {
@@ -147,92 +150,121 @@ const ItemEdit: React.FC<ItemEditProps> = ({ history, match }) => {
 
     const handleCancel = useCallback(() => {
         if (unsavedChanges) {
-            const confirmLeave = window.confirm(
-                "You have unsaved changes. Are you sure you want to discard them?"
-            );
-            if (!confirmLeave) {
-                return; // utilizatorul a anulat ieșirea
-            }
+            const confirmLeave = window.confirm("You have unsaved changes. Discard them?");
+            if (!confirmLeave) return;
         }
         log('handleCancel - Navigating back without saving');
         history.goBack();
     }, [unsavedChanges, history]);
 
     const handleMapClick = useCallback((latLng: { latitude: number; longitude: number }) => {
-        const {latitude, longitude} = latLng;
-        log(`handleMapClick - lat: ${latitude}, lng: ${longitude}`);
-
+        const { latitude, longitude } = latLng;
         setLat(latitude);
         setLng(longitude);
-
         setUnsavedChanges(true);
     }, []);
 
+    useEffect(() => {
+        if (shakeAnimation) {
+            const emptyFields: HTMLElement[] = [];
+
+            if (!title.trim()) {
+                const titleInput = document.querySelector('.inputContainer.title input');
+                if (titleInput) emptyFields.push(titleInput as HTMLElement);
+            }
+
+            emptyFields.forEach((field) => {
+                const container = field.closest('.inputContainer');
+                if (container) {
+                    const animation = createAnimation()
+                        .addElement(container)
+                        .duration(500)
+                        .direction('alternate')
+                        .iterations(3)
+                        .keyframes([
+                            { offset: 0, transform: 'translateX(0)' },
+                            { offset: 0.25, transform: 'translateX(-10px)' },
+                            { offset: 0.5, transform: 'translateX(10px)' },
+                            { offset: 0.75, transform: 'translateX(-10px)' },
+                            { offset: 1, transform: 'translateX(0)' },
+                        ]);
+                    animation.play();
+                }
+            });
+        }
+    }, [shakeAnimation, title, author]);
+
     return (
         <IonPage>
-            <IonContent fullscreen className="ion-padding add-book-content">
-                <IonCard className="add-book-card">
+            <IonContent fullscreen className="ion-padding edit-book-content">
+                <IonCard className="input-book-container">
                     <IonCardHeader>
-                        <IonCardTitle className="title-style">Edit Book</IonCardTitle>
+                        <IonCardTitle className="page-title">Edit Book</IonCardTitle>
                     </IonCardHeader>
 
                     <IonCardContent>
-                        <IonItem lines="full">
-                            <IonLabel position="fixed" className="label-style">
-                                Title <IonText color="danger">*</IonText>
-                            </IonLabel>
-                            <IonInput
-                                className="custom-textfield"
-                                placeholder="Enter book title"
-                                value={title}
-                                onIonChange={(e) => {
-                                    setUnsavedChanges(true);
-                                    setTitle(e.detail.value || '')}
-                                }
-                            />
-                        </IonItem>
-
-                        <IonItem lines="full">
-                            <IonLabel position="fixed" className="label-style">Author</IonLabel>
-                            <IonInput
-                                className="custom-textfield"
-                                placeholder="Enter author name"
-                                value={author}
-                                onIonChange={(e) => {
-                                    setUnsavedChanges(true);
-                                    setAuthor(e.detail.value || '')}
-                                }
-                            />
-                        </IonItem>
-
-                        <IonItem lines="full">
-                            <IonLabel position="fixed" className="label-style">Published</IonLabel>
-                            <IonInput
-                                className="custom-textfield"
-                                placeholder="dd/MM/yyyy"
-                                value={published ? format(new Date(published), 'dd/MM/yyyy') : ''}
-                                onIonChange={(e) => {
-                                    const inputDate = parseDDMMYYYY(e.detail.value || '');
-                                    if (inputDate) {
-                                        setPublished(inputDate);
+                        <div className="inputContainer title">
+                            <IonItem lines="full">
+                                <IonLabel position="fixed" className="label">
+                                    Title <IonText color="danger">*</IonText>
+                                </IonLabel>
+                                <IonInput
+                                    className="textfield"
+                                    placeholder="Enter book title"
+                                    value={title}
+                                    onIonChange={(e) => {
                                         setUnsavedChanges(true);
-                                    }
-                                }}
-                            />
-                        </IonItem>
+                                        setTitle(e.detail.value || '');
+                                    }}
+                                />
+                            </IonItem>
+                        </div>
 
-                        {/* Availability */}
-                        <IonItem lines="none">
-                            <IonLabel>Available</IonLabel>
-                            <IonCheckbox
-                                checked={available}
-                                onIonChange={(e) => {
-                                    setAvailable(e.detail.checked);
-                                    setUnsavedChanges(true);
-                                }
-                                }
-                            />
-                        </IonItem>
+                        <div className="inputContainer author">
+                            <IonItem lines="full">
+                                <IonLabel position="fixed" className="label">Author</IonLabel>
+                                <IonInput
+                                    className="textfield"
+                                    placeholder="Enter author name"
+                                    value={author}
+                                    onIonChange={(e) => {
+                                        setUnsavedChanges(true);
+                                        setAuthor(e.detail.value || '');
+                                    }}
+                                />
+                            </IonItem>
+                        </div>
+
+                        <div className="inputContainer published">
+                            <IonItem lines="full">
+                                <IonLabel position="fixed" className="label">Published</IonLabel>
+                                <IonInput
+                                    className="textfield"
+                                    placeholder="dd/MM/yyyy"
+                                    value={published ? format(new Date(published), 'dd/MM/yyyy') : ''}
+                                    onIonChange={(e) => {
+                                        const inputDate = parseDDMMYYYY(e.detail.value || '');
+                                        if (inputDate) {
+                                            setPublished(inputDate);
+                                            setUnsavedChanges(true);
+                                        }
+                                    }}
+                                />
+                            </IonItem>
+                        </div>
+
+                        <div className="inputContainer availability">
+                            <IonItem lines="none">
+                                <IonLabel>Available</IonLabel>
+                                <IonCheckbox
+                                    checked={available}
+                                    onIonChange={(e) => {
+                                        setAvailable(e.detail.checked);
+                                        setUnsavedChanges(true);
+                                    }}
+                                />
+                            </IonItem>
+                        </div>
 
                         <IonItem lines="full">
                             {myPhoto && (
@@ -245,7 +277,7 @@ const ItemEdit: React.FC<ItemEditProps> = ({ history, match }) => {
 
                             <IonButton
                                 expand="block"
-                                className="save-button"
+                                className="button"
                                 onClick={async () => {
                                     const newPhoto = await takePhoto();
                                     setPhoto(newPhoto);
@@ -254,7 +286,6 @@ const ItemEdit: React.FC<ItemEditProps> = ({ history, match }) => {
                                 <IonIcon icon={camera} slot="start"/>
                                 Take Picture
                             </IonButton>
-
                         </IonItem>
 
                         <IonActionSheet
@@ -268,8 +299,8 @@ const ItemEdit: React.FC<ItemEditProps> = ({ history, match }) => {
                                         if (photoToDelete) {
                                             try {
                                                 await deletePhoto(photoToDelete.filepath);
-                                            } catch (err) {
-                                                log('deletePhoto skipped - file does not exist');
+                                            } catch {
+                                                log('deletePhoto skipped');
                                             }
                                             setPhoto(undefined);
                                             setPhotoToDelete(undefined);
@@ -277,32 +308,25 @@ const ItemEdit: React.FC<ItemEditProps> = ({ history, match }) => {
                                         }
                                     },
                                 },
-                                {
-                                    text: 'Cancel',
-                                    icon: close,
-                                    role: 'cancel',
-                                },
+                                { text: 'Cancel', icon: close, role: 'cancel' },
                             ]}
                             onDidDismiss={() => setPhotoToDelete(undefined)}
                         />
 
-                        {lat && lng &&
-                            <MyMap lat={lat} lng={lng} onMapClick={handleMapClick} />
-                        }
+                        {lat && lng && <MyMap lat={lat} lng={lng} onMapClick={handleMapClick}/>}
 
-                        {/* Save changes */}
                         <IonButton
                             expand="block"
-                            className="save-button"
+                            className="button"
                             onClick={handleEdit}
-                            disabled={!unsavedChanges || saving}
+                            disabled={saving}
                         >
                             {saving ? 'Saving...' : 'Save Changes'}
                         </IonButton>
 
                         <IonButton
                             expand="block"
-                            className="cancel-button"
+                            className="button"
                             color="medium"
                             onClick={handleCancel}
                         >
