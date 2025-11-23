@@ -70,8 +70,8 @@ const ItemEdit: React.FC<ItemEditProps> = ({ history, match }) => {
     const [published, setPublished] = useState<Date | undefined>(undefined);
     const [available, setAvailable] = useState(false);
     const [photo, setPhoto] = useState<string | undefined>(undefined);
-    const [lat, setLat] = useState<number | undefined>(46.7712);
-    const [lng, setLng] = useState<number | undefined>(23.6236);
+    const [lat, setLat] = useState<number | undefined>(46.77333635695063);
+    const [lng, setLng] = useState<number | undefined>( 23.621393999977975);
     const [unsavedChanges, setUnsavedChanges] = useState(false);
     const [shakeAnimation, setShakeAnimation] = useState(false);
 
