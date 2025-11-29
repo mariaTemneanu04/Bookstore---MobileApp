@@ -7,6 +7,11 @@ import ro.pdm.bookstore.core.TAG
 class BookstoreApp : Application() {
     lateinit var container: AppContainer
 
+    companion object {
+        lateinit var instance: BookstoreApp
+            private set
+    }
+
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "init")

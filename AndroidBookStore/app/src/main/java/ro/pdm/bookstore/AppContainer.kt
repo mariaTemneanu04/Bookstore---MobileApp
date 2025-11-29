@@ -8,8 +8,10 @@ import ro.pdm.bookstore.auth.data.AuthDataSource
 import ro.pdm.bookstore.core.TAG
 import ro.pdm.bookstore.core.data.UserPreferencesRepository
 import ro.pdm.bookstore.core.data.remote.Api
+import ro.pdm.bookstore.core.utils.ConnectivityManagerNetworkMonitor
 import ro.pdm.bookstore.item.data.ItemRepository
 import ro.pdm.bookstore.item.data.remote.ItemService
+import ro.pdm.bookstore.item.data.remote.ItemWorkManager
 import ro.pdm.bookstore.item.data.remote.ItemWsClient
 import kotlin.getValue
 
@@ -29,7 +31,8 @@ class AppContainer(val context: Context) {
     private val database: BookstoreAppDatabase by lazy { BookstoreAppDatabase.getDatabase(context) }
 
     val itemRepository: ItemRepository by lazy {
-        ItemRepository(itemService, itemWsClient, database.itemDao())
+        ItemRepository(itemService, itemWsClient, database.itemDao(),
+            ConnectivityManagerNetworkMonitor(context))
     }
 
     val authRepository: AuthRepository by lazy {
@@ -40,4 +43,7 @@ class AppContainer(val context: Context) {
         UserPreferencesRepository(context.userPreferencesDataStore)
     }
 
+    init {
+        ItemWorkManager.itemRepository = itemRepository
+    }
 }

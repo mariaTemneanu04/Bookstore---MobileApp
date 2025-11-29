@@ -28,14 +28,6 @@ class BookstoreViewModel (
         }
     }
 
-    fun onItemClick() {
-        Log.d(TAG, "onItemClick")
-    }
-
-    fun onAddItem() {
-        Log.d(TAG, "onAddItem")
-    }
-
     fun setToken(token: String) {
         itemRepository.setToken(token)
     }

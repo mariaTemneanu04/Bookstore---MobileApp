@@ -17,33 +17,33 @@ abstract class BookstoreAppDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: BookstoreAppDatabase? = null
 
-        private val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("alter table items rename to items_old")
-
-                database.execSQL("""
-                    create table items (
-                        id text primary key not null,
-                        title text not null,
-                        author text,
-                        published text,
-                        available integer not null,
-                        dirty integer, 
-                        photo text,
-                        latitude real,
-                        longitude real
-                    )
-                """)
-
-                database.execSQL("""
-                    insert into items (id, title, author, published, available, dirty, photo, latitude, longitude)
-                    select id, title, author, published, available, dirty, photo, latitude, longitude
-                    from items_old
-                """)
-
-                database.execSQL("drop table items_old")
-            }
-        }
+//        private val MIGRATION_1_2 = object : Migration(1, 2) {
+//            override fun migrate(database: SupportSQLiteDatabase) {
+//                database.execSQL("alter table items rename to items_old")
+//
+//                database.execSQL("""
+//                    create table items (
+//                        id text primary key not null,
+//                        title text not null,
+//                        author text,
+//                        published text,
+//                        available integer not null,
+//                        dirty integer,
+//                        photo text,
+//                        latitude real,
+//                        longitude real
+//                    )
+//                """)
+//
+//                database.execSQL("""
+//                    insert into items (id, title, author, published, available, dirty, photo, latitude, longitude)
+//                    select id, title, author, published, available, dirty, photo, latitude, longitude
+//                    from items_old
+//                """)
+//
+//                database.execSQL("drop table items_old")
+//            }
+//        }
 
         fun getDatabase(context: Context): BookstoreAppDatabase {
             return INSTANCE ?: synchronized(this) {
@@ -53,7 +53,7 @@ abstract class BookstoreAppDatabase : RoomDatabase() {
                     "app_database"
                 )
                     .setJournalMode(JournalMode.WRITE_AHEAD_LOGGING)
-                    .addMigrations(MIGRATION_1_2)
+//                    .addMigrations(MIGRATION_1_2)
                     .build()
 
                 INSTANCE = instance

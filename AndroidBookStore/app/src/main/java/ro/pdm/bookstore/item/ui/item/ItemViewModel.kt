@@ -45,9 +45,12 @@ class ItemViewModel(
     fun loadItem() {
         viewModelScope.launch {
             itemRepository.itemStream.collect { items ->
+                Log.d(TAG, "Collecting books")
+
                 if (uiState.loadResult !is Result.Loading) {
                     return@collect
                 }
+                Log.d(TAG, "Collecting books - loadResult is loading, attempting to find book with id: ${id}")
 
                 val item = items.find { it.id == id } ?: Item()
                 uiState = uiState.copy(item = item, loadResult = Result.Success(item))
@@ -90,12 +93,10 @@ class ItemViewModel(
                     longitude = longitude
                 )
 
-                val saved: Item
-                if (id == null)
-                    saved = itemRepository.save(item)
-
+                val saved: Item = if (id == null)
+                    itemRepository.save(item)
                 else
-                    saved = itemRepository.update(item)
+                    itemRepository.update(item)
 
                 Log.d(TAG, "saveOrUpdateItem succeeded")
                 uiState = uiState.copy(submitResult = Result.Success(saved))

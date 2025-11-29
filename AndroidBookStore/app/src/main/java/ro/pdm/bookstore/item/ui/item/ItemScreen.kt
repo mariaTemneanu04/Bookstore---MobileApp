@@ -39,6 +39,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.delay
 import ro.pdm.bookstore.core.DateUtils
 import ro.pdm.bookstore.core.Result
 
@@ -176,13 +177,12 @@ fun ItemScreen(id: String?, onClose: () -> Unit) {
             }
             Row {
                 StyledTextField(
-                    value = DateUtils.convertToDDMMYYYY(published)?.let { DateUtils.convertToDDMMYYYY(published).toString() }
-                        ?: published
-                        ?: "",
-                    onValueChange = { published = DateUtils.parseDDMMYYYY(it)?.let { dateString -> DateUtils.parseDDMMYYYY(it).toString() } ?: it },
+                    value = published ?: "",
+                    onValueChange = { published = it },
                     label = "Publication Date"
                 )
             }
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -225,6 +225,16 @@ fun ItemScreen(id: String?, onClose: () -> Unit) {
                     text = "Failed to submit book - ${(itemUiState.submitResult as Result.Error).exception?.message}",
                     modifier = Modifier.fillMaxWidth(),
                 )
+            }
+        }
+
+        LaunchedEffect(canSave) {
+            if (!canSave) {
+                delay(5000L)
+                canSave = true
+            } else {
+                delay(1500L)
+                errorMessage = ""
             }
         }
     }

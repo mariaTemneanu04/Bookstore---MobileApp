@@ -10,17 +10,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import ro.pdm.bookstore.core.TAG
+import ro.pdm.bookstore.core.ui.MyNetworkStatus
 import ro.pdm.bookstore.ui.theme.AndroidBookStoreTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        (application as BookstoreApp).container.itemRepository.setContext(this@MainActivity)
         setContent {
+            (application as BookstoreApp).container.itemRepository.setContext(this@MainActivity)
             Log.d(TAG, "onCreate")
             MyApp {
                 MyAppNavHost()
             }
+
+            MyNetworkStatus()
         }
     }
 
