@@ -1,5 +1,6 @@
 package ro.pdm.bookstore.item.ui.item
 
+import android.app.Application
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -33,7 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -42,6 +43,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.delay
 import ro.pdm.bookstore.core.DateUtils
 import ro.pdm.bookstore.core.Result
+import ro.pdm.bookstore.core.ui.MyLocation
+import ro.pdm.bookstore.core.ui.MyLocationViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,10 +59,10 @@ fun ItemScreen(id: String?, onClose: () -> Unit) {
     var author by rememberSaveable { mutableStateOf(itemUiState.item.author) }
     var published by rememberSaveable { mutableStateOf(itemUiState.item.published) }
     var available by rememberSaveable { mutableStateOf(itemUiState.item.available) }
-    var latitude by rememberSaveable { mutableStateOf(itemUiState.item.latitude) }
-    var longitude by rememberSaveable { mutableStateOf(itemUiState.item.longitude) }
+    var lat by rememberSaveable { mutableStateOf(itemUiState.item.latitude) }
+    var lng by rememberSaveable { mutableStateOf(itemUiState.item.longitude) }
 
-    Log.d("BookScreen", "title = $title, author = $author, published = $published, available = $available, lat = $latitude, lng = $longitude")
+    Log.d("BookScreen", "title = $title, author = $author, published = $published, available = $available, lat = $lat, lng = $lng")
 
     LaunchedEffect(itemUiState.submitResult) {
         Log.d("ItemScreen", "Submit = ${itemUiState.submitResult}")
@@ -80,8 +83,8 @@ fun ItemScreen(id: String?, onClose: () -> Unit) {
             author = itemUiState.item.author
             published = itemUiState.item.published
             available = itemUiState.item.available
-            latitude = itemUiState.item.latitude
-            longitude = itemUiState.item.longitude
+            lat = itemUiState.item.latitude
+            lng = itemUiState.item.longitude
 
             textInitialized = true
         }
@@ -121,8 +124,8 @@ fun ItemScreen(id: String?, onClose: () -> Unit) {
                                     author,
                                     convertedDate,
                                     available,
-                                    latitude,
-                                    longitude
+                                    latitude = lat,
+                                    longitude = lng
                                 )
                             }
                         })
@@ -213,11 +216,37 @@ fun ItemScreen(id: String?, onClose: () -> Unit) {
             }
 
             Row {
-                StyledTextField(value = latitude.toString(), onValueChange = { latitude = it.toDoubleOrNull() ?: 0.0 }, label = "Latitude")
+                StyledTextField(value = lat.toString(), onValueChange = { lat = it.toDoubleOrNull() ?: 0.0 }, label = "Latitude")
             }
 
             Row {
-                StyledTextField(value = longitude.toString(), onValueChange = { longitude = it.toDoubleOrNull() ?: 0.0 }, label = "Longitude")
+                StyledTextField(value = lng.toString(), onValueChange = { lng = it.toDoubleOrNull() ?: 0.0 }, label = "Longitude")
+            }
+
+            Row {
+                val myLocationViewModel = viewModel<MyLocationViewModel>(
+                    factory = MyLocationViewModel.Factory(
+                        LocalContext.current.applicationContext as Application
+                    )
+                )
+
+                val location = myLocationViewModel.uiState
+                if (lat != 0.0 && lng != 0.0) {
+                    MyLocation(lat, lng) { newLatLng ->
+                        lat = newLatLng.latitude
+                        lng = newLatLng.longitude
+                    }
+                } else if (location != null) {
+                     MyLocation(location.latitude, location.longitude) { newLatLng ->
+                         lat = newLatLng.latitude
+                         lng = newLatLng.longitude
+                     }
+
+                    lat = location.latitude
+                    lng = location.longitude
+                } else {
+                    LinearProgressIndicator()
+                }
             }
 
             if (itemUiState.submitResult is Result.Error) {
