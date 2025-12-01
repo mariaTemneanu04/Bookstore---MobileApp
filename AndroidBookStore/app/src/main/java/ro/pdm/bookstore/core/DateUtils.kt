@@ -10,48 +10,38 @@ import java.util.TimeZone
 class DateUtils {
 
     companion object {
-        fun convertToDDMMYYYY(inputDate: String?): String? {
-            return try {
-                val dateFormat = SimpleDateFormat("EEE MMM dd HH:mm:ss 'GMT'Z yyyy", Locale.getDefault())
-                val date = dateFormat.parse(inputDate)
+        private val inputFormats = listOf(
+            SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()),
+            SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()),
+            SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()),
+        )
 
-                val formattedDateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                formattedDateFormat.format(date)
-            } catch (e: Exception) {
-                Log.e(TAG, "Error converting date: $e")
-                return null
-            }
-        }
+        private val outputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
         fun parseDDMMYYYY(dateString: String?): Date? {
-            Log.d(TAG, "Parsing date: $dateString")
-            val formats = listOf(
-                SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()),
-                SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()),
-                SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-            )
+            if (dateString.isNullOrBlank())
+                return null
 
-            for (format in formats) {
+            Log.d(TAG, "Parsing date: $dateString")
+
+            for (format in inputFormats) {
                 try {
                     format.isLenient = false
-                    val parsedDate = format.parse(dateString)
-                    Log.d(TAG, "Parsed date: $parsedDate")
-                    if (parsedDate != null) {
-                        val yearFormat = SimpleDateFormat("yyyy", Locale.getDefault())
-                        val yearString = yearFormat.format(parsedDate)
-                        val year = yearString.toInt()
-                        val currentYear = Calendar.getInstance(TimeZone.getDefault()).get(Calendar.YEAR)
-                        if (year in 1000..currentYear) {
-                            Log.i(TAG, "Date parsed successfully")
-                            return parsedDate
-                        }
+                    val parsed = format.parse(dateString)
+                    if (parsed != null) {
+                        Log.i(TAG, "Date parsed successfully: $parsed")
+                        return parsed
                     }
-                }
-                catch (e: Exception) {
-                    Log.e(TAG, "Error parsing date: $e")
-                }
+                } catch (_: Exception) {}
             }
+
+            Log.e(TAG, "Failed to parse date: $dateString")
             return null
+        }
+
+        fun formatDDMMYYYY(date: Date?): String? {
+            if (date == null) return null
+            return outputFormat.format(date)
         }
     }
 }

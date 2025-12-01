@@ -81,7 +81,7 @@ class ItemViewModel(
                         return@launch
                     }
 
-                    dateToSave = formattedDate.toString()
+                    dateToSave = DateUtils.formatDDMMYYYY(formattedDate)
                 }
 
                 val item = uiState.item.copy(

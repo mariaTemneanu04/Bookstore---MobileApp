@@ -108,7 +108,14 @@ fun ItemScreen(id: String?, onClose: () -> Unit) {
 
                             var convertedDate: String? = null
                             if (published.toString().isNotEmpty()) {
-                                convertedDate = DateUtils.convertToDDMMYYYY(published.toString())
+                                val parsed = DateUtils.parseDDMMYYYY(published)
+
+                                if (parsed == null && !published.isNullOrBlank()) {
+                                    errorMessage += "\n\tInvalid date format! (Use DD/MM/YYYY | DD.MM.YYYY | DD-MM-YYYY)"
+                                    canSave = false
+                                } else {
+                                    convertedDate = DateUtils.formatDDMMYYYY(parsed)
+                                }
 
                                 if (convertedDate == null) {
                                     errorMessage +="\n\tInvalid date format! (Use DD/MM/YYYY | DD.MM.YYYY | DD-MM-YYY)"

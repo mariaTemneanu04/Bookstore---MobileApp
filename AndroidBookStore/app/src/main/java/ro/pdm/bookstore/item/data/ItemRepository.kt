@@ -11,6 +11,7 @@ import kotlinx.coroutines.withContext
 import ro.pdm.bookstore.core.TAG
 import ro.pdm.bookstore.core.data.remote.Api
 import ro.pdm.bookstore.core.utils.ConnectivityManagerNetworkMonitor
+import ro.pdm.bookstore.core.utils.showSimpleNotificationWithTapAction
 import ro.pdm.bookstore.item.data.local.ItemDao
 import ro.pdm.bookstore.item.data.remote.ItemEvent
 import ro.pdm.bookstore.item.data.remote.ItemService
@@ -55,6 +56,15 @@ class ItemRepository (
                         "updated" -> handleItemUpdated(itemEvent.payload)
                         "deleted" -> handleItemDeleted(itemEvent.payload)
                     }
+
+                    Log.d(TAG, "Book event handled $itemEvent, notifying the user")
+                    showSimpleNotificationWithTapAction(
+                        context,
+                        "Books Channel",
+                        0,
+                        "External change detected",
+                        "Your list of books has been updated. Tap to refresh."
+                    )
                 }
             }
         }

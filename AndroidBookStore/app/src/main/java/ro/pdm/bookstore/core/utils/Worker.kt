@@ -33,6 +33,14 @@ class Worker (
         }
 
         if (dirtyItems.isNotEmpty()) {
+            showSimpleNotificationWithTapAction(
+                context,
+                "Books Channel",
+                0,
+                "Synchronization complete",
+                "Your list of items has been synchronized with the server."
+            )
+
             Log.d("Worker", "List of items has been synchronized with the server")
         }
 
