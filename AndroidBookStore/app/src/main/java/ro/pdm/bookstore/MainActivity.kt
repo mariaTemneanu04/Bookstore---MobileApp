@@ -20,6 +20,7 @@ import ro.pdm.bookstore.ui.theme.AndroidBookStoreTheme
 import ro.pdm.bookstore.core.utils.Permissions
 import android.Manifest
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import ro.pdm.bookstore.sensors.LightSensor
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalPermissionsApi::class)
@@ -46,6 +47,7 @@ class MainActivity : ComponentActivity() {
                     MyAppNavHost()
                 }
                 MyNetworkStatus()
+                LightSensor()
             }
         }
     }
